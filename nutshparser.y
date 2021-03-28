@@ -21,8 +21,17 @@ int main()
 
 %}
 
-%token IORIGHT IOLEFT IO_RR IO_LL IOAMPER AMPER PIPE
+%token IORIGHT IOLEFT IO_RR IO_LL IOAMPER AMPER PIPE INVALID WORD
 
 	/*next step is to define grammar*/
 
+%union
+{
+	char *string_value;
+	
+}
 
+%%
+
+
+%%

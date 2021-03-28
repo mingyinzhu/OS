@@ -15,12 +15,12 @@
 ">&"	{return IOAMPER;}
 "|"	{return PIPE;}
 "&"	{return AMPER;}
-[ \t]	{	\*do nothing, ignore spaces and tabs*\}
+[ \t]	{	/*do nothing, ignore spaces and tabs*/}
 [^ \t\n][^ \t\n]*	{yylval.string_val = strdup(yytext);
 			return WORD;
-			\*need to fix later to allow filenames to have numbers*\
+			/*need to fix later to allow filenames to have numbers*/
 			}
-.	{	\*invalid token*\
+.	{	/*invalid token*/
 		return INVALID;}
 
 

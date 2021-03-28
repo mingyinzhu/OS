@@ -1,6 +1,12 @@
 	/*scan for io redirect*/
 
 %{
-#include "nutshscanner.tab.h"
+#include "y.tab.h"
 %}
+
+%%
+
+
+
+%%
 

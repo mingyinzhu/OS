@@ -1,5 +1,4 @@
 	/*yacc file for io redirect*/
-
 %{
 #include <stdio.h>
 #include <string.h>

@@ -23,6 +23,6 @@ int main()
 
 %token IORIGHT IOLEFT IO_RR IO_LL IOAMPER AMPER PIPE
 
-	\*next step is to define grammar*\
+	/*next step is to define grammar*/
 
 

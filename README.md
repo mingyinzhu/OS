@@ -6,6 +6,6 @@ In progress:
 	I/O Redirection -mingyinzhu
 
 Files:
-	-Lexer: nutshscanner.l
-	-Parser: nutshparser.y
-	-Executor: nutshell.c
+	- Lexer: nutshscanner.l
+	- Parser: nutshparser.y
+	- Executor: nutshell.c

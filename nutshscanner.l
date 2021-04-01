@@ -1,7 +1,7 @@
 	/*scan for io redirect*/
 
 %{
-#include "y.tab.h"
+#include "nutshparser.tab.h"
 #include <string.h>
 %}
 
@@ -13,16 +13,13 @@
 ">>"	{return IO_RR;}
 "<<"	{return IO_LL;}
 ">&"	{return IOAMPER;}
+">>&"	{return IO_RRAMPER;}
 "|"	{return PIPE;}
 "&"	{return AMPER;}
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}
-[^ \t\n][^ \t\n]*	{yylval.string_val = strdup(yytext);
+[.A-Za-z0-9!\/_-][.A-Za-z0-9!\/_-]*	{yylval.string = strdup(yytext);
 			return WORD;
 			/*need to fix later to allow filenames to have numbers*/
 			}
-.	{	/*invalid token*/
-		return INVALID;}
-
-
 %%
 

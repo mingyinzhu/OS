@@ -66,7 +66,7 @@ commands:
 
 int yyerror(char *s)
 {
-	fprintf(stderr,"error: %s\n",s);
+	fprintf(stderr,"error: %s. Go back to kindergarten\n",s);
 	return 0;
 }
 
@@ -77,6 +77,8 @@ int yywrap()
 
 int main()
 {
+	printf("Ready\n");
 	yyparse();
 	return 0;
 }
+

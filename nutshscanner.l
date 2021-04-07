@@ -22,6 +22,7 @@ bool ifAlias(char* name){
     }
     return false;
 }
+
 %}
 
 %%
@@ -40,6 +41,7 @@ setenv {return SETENV;}
 printenv {yylval.string = strdup("printenv"); return PENV;}
 bye {yylval.string = strdup("bye"); return BYE;}
 cd {yylval.string = strdup("cd"); return CD;}
+unalias {unalias1 = true; return UNALIAS;}
 alias {return ALIAS;}
 <<EOF>> {return EOF1;}
 
@@ -47,7 +49,7 @@ alias {return ALIAS;}
 			return WORD;
 			
 			} */
-[^ \t\n][^ \t\n]* {if(ifAlias(yytext)) {
+[^ \t\n][^ \t\n]* {if(ifAlias(yytext) && !unalias1) {
                         //printf("yytext before sub: %s\n", yytext);
                            char *yycopy = strdup( subAliases(yytext) );
                            for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )

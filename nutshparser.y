@@ -42,7 +42,7 @@ int runSetAlias(char *name, char *word) {
 
 %}
 
-%token IORIGHT IOLEFT IO_RR IO_LL IOAMPER AMPER PIPE INVALID WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1
+%token IORIGHT IOLEFT IO_RR IO_LL IOAMPER AMPER PIPE INVALID WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS
 
 %union{
 	char *string;
@@ -64,4 +64,6 @@ builtin_cmd:
 		| ALIAS WORD PENV END {runSetAlias($2, $3); return 1;}
 		| ALIAS WORD BYE END {runSetAlias($2, $3); return 1;}
 		| ALIAS WORD CD END {runSetAlias($2, $3); return 1;}
+		| ALIAS END {printAlias(); return 1;}
+		| UNALIAS WORD END {unalias1 = false; rmAlias($2); return 1;}
 		| EOF1 {exit(1); return 1;}

@@ -87,7 +87,27 @@ char* replaceString(char* word, char *old, char *new1){
     
 }
 
+int printAlias(){
+    for(int i = 0; i<aliasIndex; i++){
+        printf("%s %s\n", aliasTable.name[i], aliasTable.word[i]);
+    }
+    return 1;
+}
 
+int rmAlias(char *word){
+    for(int i = 0; i<aliasIndex; i++){
+        if(strcmp(aliasTable.name[i], word) == 0){
+            aliasIndex--;
+            for(int j = i; j<aliasIndex; j++){
+                strcpy(aliasTable.name[j], aliasTable.name[j+1]);
+                strcpy(aliasTable.word[j], aliasTable.word[j+1]);
+            }
+            return 1;
+        }
+    }
+    return 1;
+
+}
 int main()
 {
     setEnv("HOME",".");

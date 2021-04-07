@@ -17,6 +17,7 @@
 "|"	{return PIPE;}
 "&"	{return AMPER;}
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}
+\"[[ .A-Za-z0-9!\/_-][ .A-Za-z0-9!\/_-]*\"	{yylval.string = strndup(++yytext, yyleng-2); return WORD;}
 [.A-Za-z0-9!\/_-][.A-Za-z0-9!\/_-]*	{yylval.string = strdup(yytext);
 			return WORD;
 			/*need to fix later to allow filenames to have numbers*/

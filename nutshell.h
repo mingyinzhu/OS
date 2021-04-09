@@ -11,11 +11,6 @@ struct basic_command
 	char* input_name;
 };
 
-struct cTable
-{
-	struct basic_command commands[128][5];
-};
-
 struct basic_command command_table[128];
 int indexCommands;
 

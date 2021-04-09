@@ -21,7 +21,7 @@ struct basic_command current_command;
 %token <string> WORD
 %start commands
 %type <string> pipes
-%type <string> all_io_redir
+%type <string> io_redir
 %type <string> line
 %type <string> arguments
 %token <string> IO_RR
@@ -36,34 +36,84 @@ struct basic_command current_command;
 %%
 
 arguments:
-	arguments WORD {printf("%s", $2); 
+	arguments WORD {/*printf("%s", $2);*/ 
+			current_command.args = malloc(100);
 			insert_arg(&current_command, $2);
 	}
 	| 
 	;
 
 cmds_args:
-	WORD arguments {printf("%s\n",$1); 
+	WORD arguments {
 			current_command.name = $1;
-			printf("%s\n",current_command.name);
 	 }
 	;
 
 pipes:
-	pipes PIPE cmds_args
-	|cmds_args
+	pipes PIPE cmds_args {command_table[indexCommands] = current_command;
+						indexCommands = indexCommands + 1;
+						printf("Command table: %d, %s, %d, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0]);
+						current_command.num_args = 0;
+						free(current_command.args);
+						
+	}
+	|cmds_args {command_table[indexCommands] = current_command;
+						indexCommands = indexCommands + 1;
+						printf("Command table: %d, %s, %d\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args);
+						current_command.num_args = 0;
+						free(current_command.args);
+	}
 	;
 
 io_redir:
-	IO_RR WORD {printf("%s", $1);}
-	|IORIGHT WORD {printf("%s", $1);}
-	|IO_RRAMPER WORD {printf("%s", $1);}
-	|IOAMPER WORD {printf("%s", $1);}
-	|IOLEFT WORD {printf("%s", $1);}
+	IO_RR WORD {
+			current_command.name = ">>";
+			current_command.input_name = $1;
+			current_command.output_name = $2;
+			command_table[indexCommands] = current_command;
+			indexCommands = indexCommands+1;			
+			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
+	}
+	|IORIGHT WORD {
+			current_command.name = ">";
+			current_command.input_name = $1;
+			current_command.output_name = $2;			
+			command_table[indexCommands] = current_command;
+			indexCommands = indexCommands+1;			
+			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
+
+	}
+	|IO_RRAMPER WORD{
+			current_command.name = ">>&";
+			current_command.input_name = $1;
+			current_command.output_name = $2;
+			command_table[indexCommands] = current_command;
+			indexCommands = indexCommands +1;			
+			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
+			
+	}
+	|IOAMPER WORD {
+			current_command.name = ">&";
+			current_command.input_name = $1;
+			current_command.output_name = $2;
+			command_table[indexCommands] = current_command;
+			indexCommands= indexCommands + 1;			
+			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
+			
+	}
+	|IOLEFT WORD {
+			current_command.name = "<";
+			current_command.input_name = $2;
+			current_command.output_name = $1;
+			command_table[indexCommands] = current_command;
+			indexCommands= indexCommands+1;			
+			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
+			
+	}
 	;
 
 all_io_redir:
-	all_io_redir io_redir {printf("%s", $1);}
+	all_io_redir io_redir {}
 	|
 	;
 
@@ -74,11 +124,6 @@ background:
 
 line:
 	pipes all_io_redir background NEWLINE {printf("Nice grammar\n");
-						command_table[indexCommands] = current_command;
-						indexCommands = indexCommands + 1;
-						printf("Command table: %d, %s, %d\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args);
-						current_command.num_args = 0;
-						free(current_command.args);
 	}
 	|NEWLINE {printf("You entered nothing\n");
 	}
@@ -109,7 +154,6 @@ int main()
 	printf("Ready\n");
 
 	while(1){
-		current_command.args = malloc(10*sizeof(char));
 		indexCommands = 0;
 		yyparse();
 		

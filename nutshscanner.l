@@ -13,7 +13,9 @@
 ">>"	{return IO_RR;}
 "<<"	{return IO_LL;}
 ">&"	{return IOAMPER;}
+"&>"	{return IOAMPER;}
 ">>&"	{return IO_RRAMPER;}
+"&>>"	{return IO_RRAMPER;}
 "|"	{return PIPE;}
 "&"	{return AMPER;}
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}

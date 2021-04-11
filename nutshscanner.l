@@ -38,18 +38,18 @@ bool ifAlias(char* name){
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}
 unsetenv {return UNSETENV;}
 setenv {return SETENV;}
-printenv {yylval.string = strdup("printenv"); return PENV;}
-bye {yylval.string = strdup("bye"); return BYE;}
-cd {yylval.string = strdup("cd"); return CD;}
+printenv {yylval.string = strdup("printenv"); if(alias1) return WORD; else return PENV;}
+bye {yylval.string = strdup("bye"); if(alias1) return WORD; else return BYE;}
+cd {yylval.string = strdup("cd"); if(alias1) return WORD; else return CD;}
 unalias {unalias1 = true; return UNALIAS;}
-alias {return ALIAS;}
+alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}
 
  /*[^ \t\n][^ \t\n]*	{yylval.string = strdup(yytext);
 			return WORD;
 			
 			} */
-[^ \t\n][^ \t\n]* {if(ifAlias(yytext) && !unalias1) {
+[^ \t\n][^ \t\n]* {if(ifAlias(yytext) && !unalias1 && !alias1) {
                         //printf("yytext before sub: %s\n", yytext);
                            char *yycopy = strdup( subAliases(yytext) );
                            for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )

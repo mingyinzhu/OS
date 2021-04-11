@@ -19,12 +19,15 @@ int yywrap()
 }
 
 int runSetAlias(char *name, char *word) {
-	for (int i = 0; i < aliasIndex; i++) {
-		if(strcmp(name, word) == 0){
+	
+	if(strcmp(name, word) == 0){
 			printf("Error, expansion of \"%s\" would create a loop.\n", name);
 			return 1;
 		}
-		else if((strcmp(aliasTable.name[i], name) == 0) && (strcmp(aliasTable.word[i], word) == 0)){
+
+	for (int i = 0; i < aliasIndex; i++) {
+		
+		if((strcmp(aliasTable.name[i], word) == 0) && (strcmp(aliasTable.word[i], name) == 0)){
 			printf("Error, expansion of \"%s\" would create a loop.\n", name);
 			return 1;
 		}
@@ -41,6 +44,7 @@ int runSetAlias(char *name, char *word) {
 }
 
 %}
+%define parse.error verbose
 
 %token IORIGHT IOLEFT IO_RR IO_LL IOAMPER AMPER PIPE INVALID WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS
 
@@ -60,10 +64,7 @@ builtin_cmd:
 		| UNSETENV WORD END	{unsetEnv($2); return 1;};	
 		| CD WORD END {chgDir($2); return 1;}
 		| CD END {chgDir("~"); return 1;}
-		| ALIAS WORD WORD END {runSetAlias($2, $3); return 1;}
-		| ALIAS WORD PENV END {runSetAlias($2, $3); return 1;}
-		| ALIAS WORD BYE END {runSetAlias($2, $3); return 1;}
-		| ALIAS WORD CD END {runSetAlias($2, $3); return 1;}
-		| ALIAS END {printAlias(); return 1;}
+		| ALIAS WORD WORD END {alias1 = false; runSetAlias($2, $3); return 1;}
+		| ALIAS END {alias1 = false; printAlias(); return 1;}
 		| UNALIAS WORD END {unalias1 = false; rmAlias($2); return 1;}
 		| EOF1 {exit(1); return 1;}

@@ -22,7 +22,7 @@ void insert_arg(struct basic_command* Command, char* arg)
 void execute_other_commands()
 {
 	printf("Entered execute_other_commands. There are %d commands.\n",indexCommands);
-	char* env[] = {"PATH=/bin","PATH=/usr/bin",(char*)0};
+	char* env[] = {"PATH=/bin","PATH=/usr/bin",(char*)0}; //I read that this doesn't matter when using execve. The path still has to be written out.
 	int std_in = dup(0);
 	int std_out = dup(1);
 
@@ -30,60 +30,61 @@ void execute_other_commands()
 
 	pid_t pid;
 	int output;
-
+	int new_fd[2];
+	int old_fd[2];
+	pipe(old_fd);
 	for(int i =0;i< indexCommands;i++)
 	{
 		printf("Command %d: %s\n", i, command_table[i].name);
-		if(command_table[i].input_name){
-			input = open(command_table[0].input_name,O_RDONLY);
+
+		if(i!=indexCommands-1)
+		{
+			pipe(new_fd);
+		}
+
+		pid = fork();
+
+		if(pid <0)
+		{
+			printf("fork error\n");
+			continue;
+		}
+		if(pid ==0 )
+		{
+			if(i!=0)
+			{
+				dup2(old_fd[0],0);
+				close(old_fd[0]);
+				close(old_fd[1]);
+			}
+			if(i!=indexCommands-1)
+			{
+
+				close(new_fd[0]);
+				dup2(new_fd[1],1);
+				close(new_fd[1]);
+			}
+			char* path = malloc(strlen("/bin/")+strlen(command_table[i].name) +1);
+			strcpy(path, "/bin/");
+			strcat(path,command_table[i].name);
+			execve(path,command_table[i].args,env);
+			perror("execve");
+			exit(1);
 		}
 		else
 		{
-			input = dup(std_in);
-		}
 
-		dup2(input,0);
-		close(input);
-
-		//if it's the last command, check for background option
-		if(i == indexCommands-1)
-		{
-			if(command_table[i].output_name)
+			if(i!=0)
 			{
-				output = open(command_table[i].output_name,O_WRONLY);
+
+				close(old_fd[0]);
+				close(old_fd[1]);
 			}
-			else
+			if(1!=indexCommands-1)
 			{
-				output = dup(std_out);
+				//dup2(&old_fd,&new_fd);
 			}
 		}
-			else
-			{
-				int pipe1[2];
-				pipe(pipe1);
-				output = pipe1[1];
-				input = pipe1[0];
-			}
-
-			dup2(output,1);
-			close(output);
-
-			pid = fork();
-			if(pid <0)
-			{
-				printf("fork error\n");
-				continue;
-			}
-			if(pid ==0 )
-			{
-				char* path = malloc(strlen("/bin/")+strlen(command_table[i].name) +1);
-				strcpy(path, "/bin/");
-				strcat(path,command_table[i].name);
-				execve(path,command_table[i].args,env);
-				perror("execve");
-				exit(1);
-
-			}
 	}
 
 			dup2(std_in,0);

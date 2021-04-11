@@ -16,7 +16,6 @@ struct basic_command command_table[128];
 int indexCommands;
 
 void insert_arg(struct basic_command* Command, char* arg);
-void set_space(struct basic_command* Command, int size);
 void execute_other_commands();
 
 int setEnv(char *var, char *word);

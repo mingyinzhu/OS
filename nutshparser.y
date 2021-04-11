@@ -218,18 +218,4 @@ int runSetAlias(char *name, char *word) {
 	return 1;
 }
 
-int main()
-{
-	
-	
-	while(1){
-		
-		printf(BLU "Ready" RESET);
-		printf("$:");
-		indexCommands = 0;
-		yyparse();
-		
-	}
-	return 0;
-}
 

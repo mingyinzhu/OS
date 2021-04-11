@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stddef.h>
 #include <stdlib.h>
 #include "nutshell.h"
@@ -6,12 +7,12 @@
 #include <string.h>
 #include <fcntl.h>
 
-#define _GNU_SOURCE
+
 #include <libgen.h>
 #include <errno.h>
 #include <fnmatch.h>
 #include <dirent.h>
-#include "nutshparser.tab.h"
+#include "nutshparser2.tab.h"
 
 extern char **environ;
 
@@ -103,7 +104,7 @@ void execute_other_commands()
 }
 
 int setEnv(char *var, char *word){
-    
+
     char *cwd = get_current_dir_name();
     char *word1 = replaceString(word,"..", dirname(strdup(cwd)));
     char *word2 = replaceString(word1,".", cwd);
@@ -113,7 +114,7 @@ int setEnv(char *var, char *word){
     free(word2);
     free(word3);
     free(cwd);
-    
+
 
     return 1;
 }
@@ -121,7 +122,7 @@ int setEnv(char *var, char *word){
 int printEnv(){
    for(char **env = environ; *env; env++){
        puts(*env);
-   } 
+   }
     return 1;
 }
 
@@ -150,13 +151,13 @@ int chgDir(char *dir){
     setEnv("PWD", ".");
     setEnv("HOME",".");
     setEnv("PATH",".:/usr/bin");
-    
+
     return 1;
 }
 
 
 char* replaceString(char* word, char *old, char *new1){
-    
+
     int i = 0;
     int num = 0;
     int nlen = strlen(new1);
@@ -168,12 +169,11 @@ char* replaceString(char* word, char *old, char *new1){
             i += olen -1;
         }
     }
-    
+
     int size = i+num*(nlen-olen)+1;
     char *updated = (char *)calloc(size,1);
-    
     i = 0;
-   
+
     while(*word){
         if(strstr(word, old) == word){
             strcpy(&updated[i], new1);
@@ -183,9 +183,9 @@ char* replaceString(char* word, char *old, char *new1){
         else
         updated[i++] = *word++;
     }
-    
+
     return updated;
-    
+
 }
 
 int printAlias(){
@@ -218,14 +218,14 @@ int wildcard(char *word){
     int cnt = 0;
     if(d){
         while((dir = readdir(d)) != NULL){
-            int res = fnmatch(word, dir->d_name, 0);    
+            int res = fnmatch(word, dir->d_name, 0);
             if(res == 0){
                 strcpy(files[cnt], dir->d_name);
                 cnt++;
             }
         }
     }
-    
+
     qsort(files, cnt, 100, newcmp);
     for(int i=0; i<cnt; i++){
         printf("%s\n", files[i]);
@@ -277,7 +277,7 @@ int main()
         printf("\033[0;35m");
         printf("FSMZ$ ");
         printf("\033[0m");
-	indexCommmands=0;
+	indexCommands=0;
         yyparse();
     }
 

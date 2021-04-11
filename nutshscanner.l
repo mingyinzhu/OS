@@ -1,7 +1,7 @@
 	/*scan for io redirect*/
 
 %{
-#include "nutshparser.tab.h"
+#include "nutshparser2.tab.h"
 #include "nutshell.h"
 #include <string.h>
 #include <stdbool.h>
@@ -46,17 +46,20 @@ unalias {unalias1 = true; return UNALIAS;}
 alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}
 
+\$\{[ .A-Za-z0-9!\/_-][ .A-Za-z0-9!\/_-]*\}	{yylval.string = strndup(yytext+2,yyleng-3);
+						printf("%s\n", yylval.string);
+						}
 \"[[ .A-Za-z0-9!\/_-][ .A-Za-z0-9!\/_-]*\"	{ yylval.string = strndup(++yytext, yyleng-2);
 						if(ifAlias(yylval.string) && !unalias1 && !alias1) {
 							char *yycopy = strdup( subAliases(yylval.string) );
 							for ( int i = strlen(subAliases(yylval.string)) - 1; i >= 0; --i )
 								unput( yycopy[i] );
 							free( yycopy );
-                    				} 
-		    				else {
-                        				yylval.string = strndup(++yytext, yyleng-2);
-                        				return WORD;
-                    				}; 
+                   } 
+		    else {
+            
+                      return WORD;
+                   }; 
 					}
 
 [.A-Za-z0-9!\/_-][.A-Za-z0-9!\/_-]*		{if(ifAlias(yytext) && !unalias1 && !alias1) {
@@ -64,11 +67,11 @@ alias {alias1 = true; return ALIAS;}
 							for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )
 								unput( yycopy[i] );
 							free( yycopy );
-                    				} 
+                    } 
 						else {
 							yylval.string = strdup(yytext);
 							return WORD;
-                    				};
+                    };
 					}
 			
 .	{	/*invalid token*/

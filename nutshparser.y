@@ -8,7 +8,7 @@
 #define RESET "\x1B[0m"
 
 int yylex();
-int yyerror(char *s);
+int yyerror(const char *s);
 int runSetAlias(char *name, char *word);
 struct basic_command current_command;
 %}
@@ -17,7 +17,7 @@ struct basic_command current_command;
 {
 	char *string;		
 }
-%token SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS
+%token WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS INVALID
 
 %type <string> pipes
 %type <string> io_redir
@@ -25,7 +25,6 @@ struct basic_command current_command;
 %type <string> arguments
 %type<string> WORD PENV CD BYE
 
-%token <string> WORD
 %token <string> IO_RR
 %token <string> IORIGHT
 %token <string> IO_RRAMPER
@@ -50,7 +49,7 @@ builtin_cmd:
 		| UNALIAS WORD END {unalias1 = false; rmAlias($2); return 1;}
 		| EOF1 {exit(1); return 1;}
 
-arguments:
+/*arguments:
 	arguments WORD {current_command.num_args = 1;
 			current_command.args = malloc(1);
 			 insert_arg(&current_command, $2);
@@ -189,15 +188,15 @@ line:
 	|error END{yyerrok;
 	}
 	;
+*/
 
 commands:
 	commands builtin_cmd {return 1;	}
-	| commands line { return 1; }
 	|
 	;
 %%
 
-int yyerror(char *s)
+int yyerror(const char *s)
 {
 	fprintf(stderr,"error: %s. Go back to kindergarten\n",s);
 	return 0;

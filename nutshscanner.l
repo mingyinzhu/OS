@@ -27,7 +27,7 @@ bool ifAlias(char* name){
 
 %%
 
-\n	{return NEWLINE;}
+\n	{return END;}
 ">"	{return IORIGHT;}
 "<"	{return IOLEFT;}
 ">>"	{return IO_RR;}

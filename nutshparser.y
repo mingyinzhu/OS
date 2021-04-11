@@ -68,36 +68,52 @@ cmds_args:
 
 pipes:
 	pipes PIPE cmds_args {	current_command.args[0] = current_command.name;
-						printf("%s, %s, %s\n", current_command.args[0],current_command.args[1],current_command.args[2]);
-						struct basic_command perm_command;
-						perm_command.name = current_command.name;
-						perm_command.args = malloc(current_command.num_args*sizeof(char*));
+						printf("%d, %s, %s, %s\n", current_command.num_args, current_command.args[0],current_command.args[1],current_command.args[2]);
+						printf("%d\n", indexCommands);
+						command_table[indexCommands].args = malloc((current_command.num_args+1)*sizeof(char*));
+						
 						for(int i=0;i<current_command.num_args;i++)
-							perm_command.args[i] = strdup(current_command.args[i]);
-						perm_command.num_args = current_command.num_args;
-						perm_command.input_name = current_command.input_name;
-						perm_command.output_name = current_command.output_name;
-
-						command_table[indexCommands] = perm_command;
+							command_table[indexCommands].args[i] = strdup(current_command.args[i]);	
+						
+						command_table[indexCommands].args[current_command.num_args] = NULL;
+						
+						command_table[indexCommands].name = strdup(current_command.name);
+						
+						command_table[indexCommands].num_args = current_command.num_args;
+						
+						if(current_command.input_name != NULL)
+							command_table[indexCommands].input_name = strdup(current_command.input_name);
+						else
+							command_table[indexCommands].input_name = NULL;
+						if(current_command.output_name != NULL)
+							command_table[indexCommands].output_name = strdup(current_command.output_name);
+						else
+							command_table[indexCommands].output_name = NULL; 
+						
 						indexCommands = indexCommands + 1;
 						free(current_command.args);						
-						printf("Command table: %d, %s, %d,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands].args[1]);
+						printf("ok\n");
+						printf("Command table: %d, %s, %d,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1]);
 						current_command.num_args = 0;
 						
 						
 	}
 	|cmds_args { current_command.args[0] = current_command.name;
-						printf("%s, %s, %s\n", current_command.args[0], current_command.args[1], current_command.args[2]);
-						struct basic_command perm_command;
-						perm_command.name = current_command.name;
-						perm_command.args = malloc(current_command.num_args*sizeof(char*));
+						/*printf("%s, %s, %s\n", current_command.args[0], current_command.args[1], current_command.args[2]);*/
+						command_table[indexCommands].args = malloc((current_command.num_args+1)*sizeof(char*));
 						for(int i=0;i<current_command.num_args;i++)
-							perm_command.args[i] = strdup(current_command.args[i]);
-						perm_command.num_args = current_command.num_args;
-						perm_command.input_name = current_command.input_name;
-						perm_command.output_name = current_command.output_name;
-							
-						command_table[indexCommands] = perm_command;
+							command_table[indexCommands].args[i] = strdup(current_command.args[i]);
+						command_table[indexCommands].args[current_command.num_args] = NULL;	
+						command_table[indexCommands].name = strdup(current_command.name);
+						command_table[indexCommands].num_args = current_command.num_args;
+						if(current_command.input_name != NULL)
+							command_table[indexCommands].input_name = strdup(current_command.input_name);
+						else
+							command_table[indexCommands].input_name = NULL;
+						if(current_command.output_name != NULL)
+							command_table[indexCommands].output_name = strdup(current_command.output_name);
+						else
+							command_table[indexCommands].output_name = NULL; 
 						indexCommands = indexCommands + 1;
 						free(current_command.args);
 						printf("Command table: %d, %s, %d,%s,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1],command_table[indexCommands-1].args[2]);

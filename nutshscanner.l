@@ -13,9 +13,13 @@
 ">>"	{return IO_RR;}
 "<<"	{return IO_LL;}
 ">&"	{return IOAMPER;}
+<<<<<<< HEAD
 "&>"	{return IOAMPER;}
 ">>&"	{return IO_RRAMPER;}
 "&>>"	{return IO_RRAMPER;}
+=======
+">>&"	{return IO_RRAMPER;}
+>>>>>>> 997e97a9ef829096e74ab445bc5722b0de69fa00
 "|"	{return PIPE;}
 "&"	{return AMPER;}
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}
@@ -25,4 +29,3 @@
 			/*need to fix later to allow filenames to have numbers*/
 			}
 %%
-

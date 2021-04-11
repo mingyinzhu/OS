@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #include <stddef.h>
 #include <stdlib.h>
 #include "nutshell.h"
@@ -95,3 +96,6 @@ void execute_other_commands()
 }
 
 
+=======
+/*nutshell c file*/
+>>>>>>> 997e97a9ef829096e74ab445bc5722b0de69fa00

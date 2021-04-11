@@ -211,3 +211,11 @@ int main()
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+%}
+
+%token IORIGHT IOLEFT IO_RR IO_LL IOAMPER AMPER PIPE
+
+	/*next step is to define grammar*/
+>>>>>>> 997e97a9ef829096e74ab445bc5722b0de69fa00

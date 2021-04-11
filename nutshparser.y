@@ -32,7 +32,6 @@ struct basic_command current_command;
 %token <string> IOLEFT
 %token <string> IOAMPER
 %token <string> AMPER
-%token <string> NEWLINE
 %token <string> PIPE
 %token <string> IO_LL
 
@@ -165,13 +164,13 @@ background:
 	;
 
 line:
-	pipes all_io_redir background NEWLINE {printf("Nice grammar\n");
+	pipes all_io_redir background END {printf("Nice grammar\n");
 						execute_other_commands();
 						return 1;
 	}
-	|NEWLINE {printf("You entered nothing\n");
+	|END {printf("You entered nothing\n");
 	}
-	|error NEWLINE{yyerrok;
+	|error END{yyerrok;
 	}
 	;
 

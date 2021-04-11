@@ -3,11 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "nutshell.h"
+#define BLU "\x1B[34m"
+#define RESET "\x1B[0m"
 
 int yylex();
 int yyerror(char *s);
 struct basic_command current_command;
-
 %}
 
 	/*next step is to define grammar*/
@@ -35,33 +36,60 @@ struct basic_command current_command;
 %token <string> IO_LL
 %%
 
+
 arguments:
-	arguments WORD {/*printf("%s", $2);*/ 
-			current_command.args = malloc(100);
-			insert_arg(&current_command, $2);
+	arguments WORD {current_command.num_args = 1;
+			current_command.args = malloc(1);
+			 insert_arg(&current_command, $2);
 	}
-	| 
+	|{current_command.num_args = 1;
+			current_command.args = malloc(1);
+	}
 	;
 
 cmds_args:
-	WORD arguments {
+	WORD arguments{
 			current_command.name = $1;
-	 }
+	}
 	;
 
 pipes:
-	pipes PIPE cmds_args {command_table[indexCommands] = current_command;
+	pipes PIPE cmds_args {	current_command.args[0] = current_command.name;
+						printf("%s, %s, %s\n", current_command.args[0],current_command.args[1],current_command.args[2]);
+						struct basic_command perm_command;
+						perm_command.name = current_command.name;
+						perm_command.args = malloc(current_command.num_args*sizeof(char*));
+						for(int i=0;i<current_command.num_args;i++)
+							perm_command.args[i] = strdup(current_command.args[i]);
+						perm_command.num_args = current_command.num_args;
+						perm_command.input_name = current_command.input_name;
+						perm_command.output_name = current_command.output_name;
+
+						command_table[indexCommands] = perm_command;
 						indexCommands = indexCommands + 1;
-						printf("Command table: %d, %s, %d, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0]);
+						free(current_command.args);						
+						printf("Command table: %d, %s, %d,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands].args[1]);
 						current_command.num_args = 0;
-						free(current_command.args);
+						
 						
 	}
-	|cmds_args {command_table[indexCommands] = current_command;
+	|cmds_args { current_command.args[0] = current_command.name;
+						printf("%s, %s, %s\n", current_command.args[0], current_command.args[1], current_command.args[2]);
+						struct basic_command perm_command;
+						perm_command.name = current_command.name;
+						perm_command.args = malloc(current_command.num_args*sizeof(char*));
+						for(int i=0;i<current_command.num_args;i++)
+							perm_command.args[i] = strdup(current_command.args[i]);
+						perm_command.num_args = current_command.num_args;
+						perm_command.input_name = current_command.input_name;
+						perm_command.output_name = current_command.output_name;
+							
+						command_table[indexCommands] = perm_command;
 						indexCommands = indexCommands + 1;
-						printf("Command table: %d, %s, %d\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args);
-						current_command.num_args = 0;
 						free(current_command.args);
+						printf("Command table: %d, %s, %d,%s,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1],command_table[indexCommands-1].args[2]);
+						current_command.num_args = 0;
+						
 	}
 	;
 
@@ -124,6 +152,8 @@ background:
 
 line:
 	pipes all_io_redir background NEWLINE {printf("Nice grammar\n");
+						execute_other_commands();
+						return 1;
 	}
 	|NEWLINE {printf("You entered nothing\n");
 	}
@@ -133,6 +163,7 @@ line:
 
 commands:
 	commands line { return 1;
+						
 	}
 	|
 	;
@@ -151,9 +182,12 @@ int yywrap()
 
 int main()
 {
-	printf("Ready\n");
-
+	
+	
 	while(1){
+		
+		printf(BLU "Ready" RESET);
+		printf("$:");
 		indexCommands = 0;
 		yyparse();
 		

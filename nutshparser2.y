@@ -19,12 +19,15 @@ struct basic_command current_command;
 }
 %token WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS INVALID
 
+/*
 %type <string> pipes
 %type <string> io_redir
 %type <string> line
 %type <string> arguments
 %type<string> WORD PENV CD BYE
+*/
 
+%type<string> WORD PENV CD BYE
 %token <string> IO_RR
 %token <string> IORIGHT
 %token <string> IO_RRAMPER

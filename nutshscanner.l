@@ -28,14 +28,14 @@ bool ifAlias(char* name){
 %%
 
 \n	{return END;}
-">"	{return IORIGHT;}
-"<"	{return IOLEFT;}
-">>"	{return IO_RR;}
-"<<"	{return IO_LL;}
+'>' {return IORIGHT;}
+'<' {return IOLEFT;}
+'>>'	{return IO_RR;}
+'<<'	{return IO_LL;}
 ">&"	{return IOAMPER;}
 ">>&"	{return IO_RRAMPER;}
-"|"	{return PIPE;}
-"&"	{return AMPER;}
+'|'	{return PIPE;}
+'&'	{return AMPER;}
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}
 unsetenv {return UNSETENV;}
 setenv {return SETENV;}

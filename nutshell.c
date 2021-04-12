@@ -185,7 +185,7 @@ int main()
     //wildcard("?sup.*");
 
     while(1){
-        printf("\033[0;35m");
+        printf("\033[0;36m");
         printf("FSMZ$ ");
         printf("\033[0m");
         yyparse();

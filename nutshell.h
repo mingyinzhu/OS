@@ -14,6 +14,7 @@ struct basic_command
 
 struct basic_command command_table[128];
 int indexCommands;
+struct basic_command current_command;
 
 void insert_arg(struct basic_command* Command, char* arg);
 void execute_other_commands();

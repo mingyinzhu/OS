@@ -10,7 +10,7 @@
 int yylex();
 int yyerror(const char *s);
 int runSetAlias(char *name, char *word);
-struct basic_command current_command;
+
 %}
 %define parse.error verbose
 %union
@@ -49,14 +49,11 @@ builtin_cmd:
 		| UNALIAS WORD END {unalias1 = false; rmAlias($2); return 1;}
 		| EOF1 {exit(1); return 1;}
 
-/*arguments:
-	arguments WORD {current_command.num_args = 1;
-			current_command.args = malloc(1);
+arguments:
+	arguments WORD {
 			 insert_arg(&current_command, $2);
 	}
-	|{current_command.num_args = 1;
-			current_command.args = malloc(1);
-	}
+	|{}
 	;
 
 cmds_args:
@@ -67,8 +64,6 @@ cmds_args:
 
 pipes:
 	pipes PIPE cmds_args {	current_command.args[0] = current_command.name;
-						printf("%d, %s, %s, %s\n", current_command.num_args, current_command.args[0],current_command.args[1],current_command.args[2]);
-						printf("%d\n", indexCommands);
 						command_table[indexCommands].args = malloc((current_command.num_args+1)*sizeof(char*));
 						
 						for(int i=0;i<current_command.num_args;i++)
@@ -91,14 +86,13 @@ pipes:
 						
 						indexCommands = indexCommands + 1;
 						free(current_command.args);						
-						printf("ok\n");
+						
 						printf("Command table: %d, %s, %d,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1]);
 						current_command.num_args = 0;
 						
 						
 	}
 	|cmds_args { current_command.args[0] = current_command.name;
-						/*printf("%s, %s, %s\n", current_command.args[0], current_command.args[1], current_command.args[2]);*/
 						command_table[indexCommands].args = malloc((current_command.num_args+1)*sizeof(char*));
 						for(int i=0;i<current_command.num_args;i++)
 							command_table[indexCommands].args[i] = strdup(current_command.args[i]);
@@ -188,17 +182,19 @@ line:
 	|error END{yyerrok;
 	}
 	;
-*/
 
 commands:
-	commands builtin_cmd {return 1;	}
-	|
+	commands builtin_cmd {	}
+	|commands line {
+	}
+	| {}
 	;
 %%
 
+
 int yyerror(const char *s)
 {
-	fprintf(stderr,"error: %s. Go back to kindergarten\n",s);
+	fprintf(stderr,"error: %s\n" ,s);
 	return 0;
 }
 

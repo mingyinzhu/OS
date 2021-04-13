@@ -46,10 +46,10 @@ unalias {unalias1 = true; return UNALIAS;}
 alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}
 
-\$\{[ .A-Za-z0-9!\/_-][ .A-Za-z0-9!\/_-]*\}	{yylval.string = strndup(yytext+2,yyleng-3);
+\$\{[ :.A-Za-z0-9!\/_-][ :.A-Za-z0-9!\/_-]*\}	{yylval.string = strndup(yytext+2,yyleng-3);
 						printf("%s\n", yylval.string);
 						}
-\"[[ .A-Za-z0-9!\/_-][ .A-Za-z0-9!\/_-]*\"	{ yylval.string = strndup(++yytext, yyleng-2);
+\"[[ :.A-Za-z0-9!\/_-][ :.A-Za-z0-9!\/_-]*\"	{ yylval.string = strndup(++yytext, yyleng-2);
 						if(ifAlias(yylval.string) && !unalias1 && !alias1) {
 							char *yycopy = strdup( subAliases(yylval.string) );
 							for ( int i = strlen(subAliases(yylval.string)) - 1; i >= 0; --i )
@@ -62,7 +62,7 @@ alias {alias1 = true; return ALIAS;}
                    }; 
 					}
 
-[.A-Za-z0-9!\/_-][.A-Za-z0-9!\/_-]*		{if(ifAlias(yytext) && !unalias1 && !alias1) {
+[:.A-Za-z0-9!\/_-][:.A-Za-z0-9!\/_-]*		{if(ifAlias(yytext) && !unalias1 && !alias1) {
 							char *yycopy = strdup( subAliases(yytext) );
 							for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )
 								unput( yycopy[i] );

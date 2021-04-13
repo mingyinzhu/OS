@@ -19,7 +19,7 @@ extern char **environ;
 void insert_arg(struct basic_command* Command, char* arg)
 {
 	Command -> num_args = Command -> num_args + 1;
-	if(Command -> num_args >=  Command -> space_args)
+	if(Command -> num_args >  Command -> space_args)
 	{
 		Command -> args = realloc(Command -> args, sizeof(Command ->args)*2);
 		Command -> space_args = sizeof(Command -> args);
@@ -278,6 +278,8 @@ int main()
         printf("FSMZ$ ");
         printf("\033[0m");
 	indexCommands=0;
+	current_command.num_args = 1;
+	current_command.args = malloc(1);
         yyparse();
     }
 

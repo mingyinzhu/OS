@@ -57,6 +57,7 @@ void execute_other_commands()
 	//execute commands and pipe
 	for(int i =0;i< indexCommands;i++)
 	{
+		printf("Command %d: %s
 		if(i!=indexCommands-1)
 		{
 			pipe(new_fd);

@@ -1,7 +1,7 @@
 	/*scan for io redirect*/
 
 %{
-#include "nutshparser2.tab.h"
+#include "nutshparser.tab.h"
 #include "nutshell.h"
 #include <string.h>
 #include <stdbool.h>
@@ -31,9 +31,9 @@ bool ifAlias(char* name){
 ">"	{return IORIGHT;}
 "<"	{return IOLEFT;}
 ">>"	{return IO_RR;}
-"<<"	{return IO_LL;}
 ">&"	{return IOAMPER;}
-">>&"	{return IO_RRAMPER;}
+"2>"	{return ERRFILE;}
+"2>&1"	{return ERRSTDOUT;}
 "|"	{return PIPE;}
 "&"	{return AMPER;}
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}

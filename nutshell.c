@@ -30,7 +30,7 @@ void insert_arg(struct basic_command* Command, char* arg)
 
 
 void execute_other_commands()
-{	
+{
 	printf("Entered execute_other_commands. There are %d commands.\n",indexCommands);
 	char* env[] = {"PATH=/bin","PATH=/usr/bin",(char*)0}; //I read that this doesn't matter when using execve. The path still has to be written out.
 	int std_in = dup(0);
@@ -43,10 +43,23 @@ void execute_other_commands()
 	int new_fd[2];
 	int old_fd[2];
 	pipe(old_fd);
+
+	if(input_name){
+		freopen(input_name, "r", stdin);
+	}
+	if(output_name){
+		freopen(output_name,"a", stdout);
+	}
+	if(err_name){
+		if(err_name == "2>&1")
+			dup2(1,2);
+		else
+			freopen(err_name, "w", stderr);
+	}
+
 	for(int i =0;i< indexCommands;i++)
 	{
 		printf("Command %d: %s\n", i, command_table[i].name);
-
 		if(i!=indexCommands-1)
 		{
 			pipe(new_fd);
@@ -61,19 +74,21 @@ void execute_other_commands()
 		}
 		if(pid ==0 )
 		{
-			if(i!=0)
+			if(i!=0) //if not first command, close input side of old pipe, duplicate the stdin to the input side of old pipe
 			{
 				dup2(old_fd[0],0);
 				close(old_fd[0]);
 				close(old_fd[1]);
 			}
-			if(i!=indexCommands-1)
+			if(i!=indexCommands-1) //if not last command, close the output side of new pipe, duplicate stdout to the output side of new pipe
 			{
 
 				close(new_fd[0]);
 				dup2(new_fd[1],1);
 				close(new_fd[1]);
 			}
+
+			//execute command
 			char* path = malloc(strlen("/bin/")+strlen(command_table[i].name) +1);
 			strcpy(path, "/bin/");
 			strcat(path,command_table[i].name);
@@ -90,9 +105,10 @@ void execute_other_commands()
 				close(old_fd[0]);
 				close(old_fd[1]);
 			}
-			if(1!=indexCommands-1)
+			if(i!=indexCommands-1)
 			{
-				//dup2(&old_fd,&new_fd);
+				dup2(old_fd[0],new_fd[0]);
+				dup2(old_fd[1],new_fd[1]);
 			}
 		}
 	}

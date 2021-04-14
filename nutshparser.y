@@ -10,17 +10,16 @@
 int yylex();
 int yyerror(const char *s);
 int runSetAlias(char *name, char *word);
-
+void copyCommand(struct basic_command* current_command);
 %}
 %define parse.error verbose
 %union
 {
 	char *string;		
 }
-%token WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS INVALID
+%token ERRSTDOUT ERRFILE WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS INVALID
 
 %type <string> pipes
-%type <string> io_redir
 %type <string> line
 %type <string> arguments
 %type<string> WORD PENV CD BYE
@@ -33,21 +32,23 @@ int runSetAlias(char *name, char *word);
 %token <string> AMPER
 %token <string> PIPE
 %token <string> IO_LL
+%type <string> ERRSTDOUT
+%type <string> ERRFILE
 
 %start commands
 %%
 
 builtin_cmd:
-		BYE END		{exit(1); return 1;}
-		| SETENV WORD WORD END	{setEnv($2, $3); return 1;};
-		| PENV END		{printEnv(); return 1;};
-		| UNSETENV WORD END	{unsetEnv($2); return 1;};	
-		| CD WORD END {chgDir($2); return 1;}
-		| CD END {chgDir("~"); return 1;}
-		| ALIAS WORD WORD END {alias1 = false; runSetAlias($2, $3); return 1;}
-		| ALIAS END {alias1 = false; printAlias(); return 1;}
-		| UNALIAS WORD END {unalias1 = false; rmAlias($2); return 1;}
-		| EOF1 {exit(1); return 1;}
+		BYE	{exit(1);}
+		| SETENV WORD WORD {setEnv($2, $3);};
+		| PENV		{printEnv(); };
+		| UNSETENV WORD {unsetEnv($2);};	
+		| CD WORD {chgDir($2);}
+		| CD {chgDir("~");}
+		| ALIAS WORD WORD {alias1 = false; runSetAlias($2, $3);}
+		| ALIAS {alias1 = false; printAlias(); }
+		| UNALIAS WORD {unalias1 = false; rmAlias($2); }
+		| EOF1 {exit(1); }
 
 arguments:
 	arguments WORD {
@@ -58,112 +59,57 @@ arguments:
 
 cmds_args:
 	WORD arguments{
-			current_command.name = $1;
+			current_command.name = strdup($1);
 	}
 	;
 
 pipes:
-	pipes PIPE cmds_args {	current_command.args[0] = current_command.name;
-						command_table[indexCommands].args = malloc((current_command.num_args+1)*sizeof(char*));
-						
-						for(int i=0;i<current_command.num_args;i++)
-							command_table[indexCommands].args[i] = strdup(current_command.args[i]);	
-						
-						command_table[indexCommands].args[current_command.num_args] = NULL;
-						
-						command_table[indexCommands].name = strdup(current_command.name);
-						
-						command_table[indexCommands].num_args = current_command.num_args;
-						
-						if(current_command.input_name != NULL)
-							command_table[indexCommands].input_name = strdup(current_command.input_name);
-						else
-							command_table[indexCommands].input_name = NULL;
-						if(current_command.output_name != NULL)
-							command_table[indexCommands].output_name = strdup(current_command.output_name);
-						else
-							command_table[indexCommands].output_name = NULL; 
-						
+	pipes PIPE cmds_args {			copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);						
-						
-						printf("Command table: %d, %s, %d,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1]);
-						current_command.num_args = 0;
+						/*printf("Command table: %d, %s, %d,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1]);*/
+						current_command.num_args = 1;
 						
 						
 	}
-	|cmds_args { current_command.args[0] = current_command.name;
-						command_table[indexCommands].args = malloc((current_command.num_args+1)*sizeof(char*));
-						for(int i=0;i<current_command.num_args;i++)
-							command_table[indexCommands].args[i] = strdup(current_command.args[i]);
-						command_table[indexCommands].args[current_command.num_args] = NULL;	
-						command_table[indexCommands].name = strdup(current_command.name);
-						command_table[indexCommands].num_args = current_command.num_args;
-						if(current_command.input_name != NULL)
-							command_table[indexCommands].input_name = strdup(current_command.input_name);
-						else
-							command_table[indexCommands].input_name = NULL;
-						if(current_command.output_name != NULL)
-							command_table[indexCommands].output_name = strdup(current_command.output_name);
-						else
-							command_table[indexCommands].output_name = NULL; 
+	|cmds_args {				copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);
 						printf("Command table: %d, %s, %d,%s,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1],command_table[indexCommands-1].args[2]);
-						current_command.num_args = 0;
+						current_command.num_args = 1;
 						
 	}
 	;
 
-io_redir:
-	IO_RR WORD {
-			current_command.name = ">>";
-			current_command.input_name = $1;
-			current_command.output_name = $2;
-			command_table[indexCommands] = current_command;
-			indexCommands = indexCommands+1;			
-			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
+input_redir:
+	IOLEFT WORD {
+		input_name = strdup($2);
 	}
-	|IORIGHT WORD {
-			current_command.name = ">";
-			current_command.input_name = $1;
-			current_command.output_name = $2;			
-			command_table[indexCommands] = current_command;
-			indexCommands = indexCommands+1;			
-			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
+	| {}
+	;
 
+output_redir:
+	IO_RR WORD {
+			output_name = strdup($2);
+	}			
+	|IORIGHT WORD {
+			output_name = strdup($2);
 	}
-	|IO_RRAMPER WORD{
-			current_command.name = ">>&";
-			current_command.input_name = $1;
-			current_command.output_name = $2;
-			command_table[indexCommands] = current_command;
-			indexCommands = indexCommands +1;			
-			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
-			
+	|{}
+	;
+
+err_redir:
+	ERRSTDOUT {
+			err_name = strdup("2>&1");
 	}
-	|IOAMPER WORD {
-			current_command.name = ">&";
-			current_command.input_name = $1;
-			current_command.output_name = $2;
-			command_table[indexCommands] = current_command;
-			indexCommands= indexCommands + 1;			
-			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
-			
+	|ERRFILE WORD {
+			err_name =strdup($2);
 	}
-	|IOLEFT WORD {
-			current_command.name = "<";
-			current_command.input_name = $2;
-			current_command.output_name = $1;
-			command_table[indexCommands] = current_command;
-			indexCommands= indexCommands+1;			
-			printf("Command table: %d, %s, %s, %s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].input_name,command_table[indexCommands-1].output_name);
-			
-	}
+	|{}		
 	;
 
 all_io_redir:
-	all_io_redir io_redir {}
+	all_io_redir input_redir output_redir err_redir{ printf("entered redirect\n");}
 	|
 	;
 
@@ -173,21 +119,20 @@ background:
 	;
 
 line:
-	pipes all_io_redir background END {printf("Nice grammar\n");
+	pipes input_redir output_redir err_redir background END {	printf("%s %s %s\n", input_name, output_name, err_name);
 						execute_other_commands();
 						return 1;
 	}
-	|END {printf("You entered nothing\n");
+	|END { return 1;
 	}
-	|error END{yyerrok;
+	|error END{	yyerrok; return 1;
 	}
 	;
 
 commands:
-	commands builtin_cmd {	}
-	|commands line {
-	}
-	| {}
+	commands builtin_cmd input_redir output_redir err_redir END{return 1;}
+	|commands line {}
+	|{}
 	;
 %%
 
@@ -228,4 +173,12 @@ int runSetAlias(char *name, char *word) {
 	return 1;
 }
 
-
+void copyCommand(struct basic_command* current_command){
+		current_command -> args[0] = strdup(current_command->name);
+		command_table[indexCommands].args = malloc((current_command -> num_args+1)*sizeof(char*));
+		for(int i=0;i<current_command -> num_args;i++)
+			command_table[indexCommands].args[i] = strdup(current_command -> args[i]);	
+		command_table[indexCommands].args[current_command -> num_args] = NULL;
+		command_table[indexCommands].name = strdup(current_command -> name);
+		command_table[indexCommands].num_args = current_command -> num_args;
+		}

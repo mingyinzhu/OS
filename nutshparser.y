@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "nutshell.h"
 #define BLU "\x1B[34m"
 #define RESET "\x1B[0m"
@@ -11,6 +12,8 @@ int yylex();
 int yyerror(const char *s);
 int runSetAlias(char *name, char *word);
 void copyCommand(struct basic_command* current_command);
+void redirect();
+
 %}
 %define parse.error verbose
 %union
@@ -67,7 +70,6 @@ pipes:
 	pipes PIPE cmds_args {			copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);						
-						/*printf("Command table: %d, %s, %d,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1]);*/
 						current_command.num_args = 1;
 						
 						
@@ -75,7 +77,6 @@ pipes:
 	|cmds_args {				copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);
-						printf("Command table: %d, %s, %d,%s,%s,%s\n", indexCommands-1, command_table[indexCommands-1].name, command_table[indexCommands-1].num_args,command_table[indexCommands-1].args[0],command_table[indexCommands-1].args[1],command_table[indexCommands-1].args[2]);
 						current_command.num_args = 1;
 						
 	}
@@ -108,30 +109,26 @@ err_redir:
 	|{}		
 	;
 
-all_io_redir:
-	all_io_redir input_redir output_redir err_redir{ printf("entered redirect\n");}
-	|
-	;
-
 background:
 	AMPER
 	|
 	;
 
 line:
-	pipes input_redir output_redir err_redir background END {	printf("%s %s %s\n", input_name, output_name, err_name);
-						execute_other_commands();
-						return 1;
+	pipes input_redir output_redir err_redir background END {	
+								execute_other_commands();
+								
 	}
-	|END { return 1;
+	|END { 
 	}
-	|error END{	yyerrok; return 1;
+	|error END{	yyerrok; 
 	}
 	;
 
 commands:
-	commands builtin_cmd input_redir output_redir err_redir END{return 1;}
-	|commands line {}
+	commands builtin_cmd input_redir output_redir err_redir END{
+									return 1;}
+	|commands line {return 1;}
 	|{}
 	;
 %%
@@ -182,3 +179,18 @@ void copyCommand(struct basic_command* current_command){
 		command_table[indexCommands].name = strdup(current_command -> name);
 		command_table[indexCommands].num_args = current_command -> num_args;
 		}
+
+void redirect(){
+		if(input_name)
+			freopen(input_name, "r", stdin);
+		if(output_name)
+			freopen(output_name, "w+", stdout);
+		if(err_name)
+		{
+			if(err_name == "2>&1")
+				dup2(1,2);
+			else
+				freopen(err_name, "w+", stderr);
+		}
+
+}

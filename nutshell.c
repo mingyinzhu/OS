@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
-
+#include <sys/wait.h>
 
 #include <libgen.h>
 #include <errno.h>
@@ -31,24 +31,21 @@ void insert_arg(struct basic_command* Command, char* arg)
 
 void execute_other_commands()
 {
-	printf("Entered execute_other_commands. There are %d commands.\n",indexCommands);
 	char* env[] = {"PATH=/bin","PATH=/usr/bin",(char*)0}; //I read that this doesn't matter when using execve. The path still has to be written out.
-	int std_in = dup(0);
-	int std_out = dup(1);
-
-	int input;
 
 	pid_t pid;
-	int output;
+	pid_t wpid;
+	int status;
 	int new_fd[2];
 	int old_fd[2];
 	pipe(old_fd);
 
+	//redirection
 	if(input_name){
 		freopen(input_name, "r", stdin);
 	}
 	if(output_name){
-		freopen(output_name,"a", stdout);
+		freopen(output_name,"w+", stdout);
 	}
 	if(err_name){
 		if(err_name == "2>&1")
@@ -57,9 +54,9 @@ void execute_other_commands()
 			freopen(err_name, "w", stderr);
 	}
 
+	//execute commands and pipe
 	for(int i =0;i< indexCommands;i++)
 	{
-		printf("Command %d: %s\n", i, command_table[i].name);
 		if(i!=indexCommands-1)
 		{
 			pipe(new_fd);
@@ -70,9 +67,9 @@ void execute_other_commands()
 		if(pid <0)
 		{
 			printf("fork error\n");
-			continue;
+			//put something here to catch the error
 		}
-		if(pid ==0 )
+		if(pid ==0 ) //child
 		{
 			if(i!=0) //if not first command, close input side of old pipe, duplicate the stdin to the input side of old pipe
 			{
@@ -95,8 +92,9 @@ void execute_other_commands()
 			execve(path,command_table[i].args,env);
 			perror("execve");
 			exit(1);
-		}
-		else
+		}//end of child
+
+		else //parent
 		{
 
 			if(i!=0)
@@ -110,18 +108,19 @@ void execute_other_commands()
 				dup2(old_fd[0],new_fd[0]);
 				dup2(old_fd[1],new_fd[1]);
 			}
-		}
-	}
+		} //end of parent
+	}//end of for loop
+		while((wpid = wait(&status))>0);
 
-			dup2(std_in,0);
-			dup2(std_out,1);
-			close(std_in);
-			close(std_out);
+			close(old_fd[0]);
+			close(old_fd[1]);
+			close(new_fd[0]);
+			close(new_fd[1]);
 
 }
 
 int setEnv(char *var, char *word){
-
+    if(expand == true){
     char *cwd = get_current_dir_name();
     char *word1 = replaceString(word,"..", dirname(strdup(cwd)));
     char *word2 = replaceString(word1,".", cwd);
@@ -131,7 +130,10 @@ int setEnv(char *var, char *word){
     free(word2);
     free(word3);
     free(cwd);
-
+    }
+    else{
+	setenv(var, word, 1);
+    }
 
     return 1;
 }
@@ -159,7 +161,13 @@ int unsetEnv(char *var){
 }
 
 int chgDir(char *dir){
-    char *dir2 = replaceString(dir,"~", getenv("HOME"));
+	char *dir2;
+    if(expand = true){
+    	dir2 = strdup(replaceString(dir,"~", getenv("HOME")));
+    }
+    else{
+    	dir2 = strdup(dir);
+    }
     //chdir(dir2);
     if(chdir(dir2)!=0){
             fprintf(stderr, "cd %s failed: %s\n", dir2, strerror(errno));
@@ -283,22 +291,26 @@ char* delChar(char *word, char c){
 
 int main()
 {
+    expand = true;
     setEnv("HOME",".");
     setEnv("PATH",".:/usr/bin");
 
     aliasIndex = 0;
+	printf("\033[0;35m");
+        printf("FSMZ$ ");
+        printf("\033[0m");
 
     //wildcard("?sup.*");
 
     while(1){
-        printf("\033[0;35m");
-        printf("FSMZ$ ");
-        printf("\033[0m");
-	indexCommands=0;
+        indexCommands=0;
 	current_command.num_args = 1;
 	current_command.args = malloc(1);
         yyparse();
-    }
+	printf("\033[0;35m");
+        printf("FSMZ$ ");
+        printf("\033[0m");
+ }
 
     return 0;
 }

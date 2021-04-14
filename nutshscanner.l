@@ -6,23 +6,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-char* subAliases(char* name){
-    for (int i = 0; i < aliasIndex; i++) {
-        if(strcmp(aliasTable.name[i], name) == 0) {
-            return aliasTable.word[i];
-        }
-    }
-    return name;
-}
-bool ifAlias(char* name){
-    for (int i = 0; i < aliasIndex; i++) {
-        if(strcmp(aliasTable.name[i], name) == 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
 int yyerrorlex (const char*s){
 	printf("%s\n", s);
 	return 0;

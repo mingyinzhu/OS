@@ -235,7 +235,7 @@ int rmAlias(char *word){
 
 }
 
-int wildcard(char *word){
+char* wildcard(char *word){
     DIR *d;
     struct dirent *dir;
     d = opendir(".");
@@ -252,17 +252,29 @@ int wildcard(char *word){
     }
 
     qsort(files, cnt, 100, newcmp);
+    /*
     for(int i=0; i<cnt; i++){
         printf("%s\n", files[i]);
     }
+    */
     if(cnt == 0){
         char *word1 = delChar(word, '*');
         char *word2 = delChar(word1, '?');
-        printf("%s\n", word2);
+        strcpy(files[cnt], word2);
+        cnt++;
         free(word1);
         free(word2);
     }
-    return 1;
+    char final[12927];
+    strcpy(final, files[0]);
+    for(int i = 1;i < cnt;i++){
+        strcat(final," ");
+        strcat(final, files[i]);
+    }
+    char *final2 = (char *)calloc(strlen(final) + 1,1);
+    strcpy(final2, final);
+
+    return final2;
 }
 
 int newcmp(const void *str1, const void *str2)
@@ -287,6 +299,23 @@ char* delChar(char *word, char c){
     strcpy(updated, newword);
 
     return updated;
+}
+
+char* subAliases(char* name){
+    for (int i = 0; i < aliasIndex; i++) {
+        if(strcmp(aliasTable.name[i], name) == 0) {
+            return aliasTable.word[i];
+        }
+    }
+    return name;
+}
+bool ifAlias(char* name){
+    for (int i = 0; i < aliasIndex; i++) {
+        if(strcmp(aliasTable.name[i], name) == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 int main()

@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <fnmatch.h>
 #include <dirent.h>
-#include "nutshparser2.tab.h"
+#include "nutshparser.tab.h"
 
 extern char **environ;
 

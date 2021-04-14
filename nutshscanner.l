@@ -25,11 +25,11 @@ int yyerrorlex (const char*s){
 "|"	{return PIPE;}
 "&"	{return AMPER;}
 [ \t]	{	/*do nothing, ignore spaces and tabs*/}
-unsetenv {return UNSETENV;}
-setenv {return SETENV;}
+unsetenv {alias2 = true; return UNSETENV;}
+setenv {alias2 = true; return SETENV;}
 printenv {yylval.string = strdup("printenv"); if(alias1) return WORD; else return PENV;}
 bye {yylval.string = strdup("bye"); if(alias1) return WORD; else return BYE;}
-cd {yylval.string = strdup("cd"); if(alias1) return WORD; else return CD;}
+cd {alias2 = true; yylval.string = strdup("cd"); if(alias1) return WORD; else return CD;}
 unalias {unalias1 = true; return UNALIAS;}
 alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}

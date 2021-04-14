@@ -58,7 +58,7 @@ alias {alias1 = true; return ALIAS;}
                    }; 
 					}
 
-[~:.A-Za-z0-9!\/_-][~:.A-Za-z0-9!\/_-]*		{ expand = true;
+[\?\*~:.A-Za-z0-9!\/_-][\?\*~:.A-Za-z0-9!\/_-]*		{ expand = true;
 							if(ifAlias(yytext) && !unalias1 && !alias1) {
 							char *yycopy = strdup( subAliases(yytext) );
 							for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )
@@ -66,8 +66,17 @@ alias {alias1 = true; return ALIAS;}
 							free( yycopy );
                     } 
 						else {
-							yylval.string = strdup(wildcard(yytext));
-							return WORD;
+							if(strcmp(yytext,wildcard(yytext)) == 0){
+							yylval.string = strdup(yytext);
+							return WORD;	
+							}
+							else{
+								char *yycopy2 = strdup( wildcard(yytext) );
+							for ( int i = strlen(wildcard(yytext)) - 1; i >= 0; --i )
+								unput( yycopy2[i] );
+							free( yycopy2 );
+							}
+							
                     };
 					}
 			

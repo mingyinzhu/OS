@@ -49,7 +49,7 @@ builtin_cmd:
 		| ALIAS WORD WORD {alias1 = false; runSetAlias($2, $3);}
 		| ALIAS {alias1 = false; printAlias(); }
 		| UNALIAS WORD {unalias1 = false; rmAlias($2); }
-		| EOF1 {exit(1); }
+		| EOF1 {printf("\n"); exit(1); }
 
 arguments:
 	arguments WORD {

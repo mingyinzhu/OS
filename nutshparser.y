@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "nutshell.h"
-#define BLU "\x1B[34m"
-#define RESET "\x1B[0m"
 
 int yylex();
 int yyerror(const char *s);
@@ -151,14 +149,31 @@ int runSetAlias(char *name, char *word) {
 			printf("Error, expansion of \"%s\" would create a loop.\n", name);
 			return 1;
 		}
-
+	char *word2 = calloc(strlen(word)+1,1);
+	strcpy(word2, word);
+	while(ifAlias(word2)){
+	
+	if(strcmp(name, subAliases(word2)) == 0){
+		free(word2);
+		printf("Error, expansion of \"%s\" would create a loop.\n", name);
+			return 1;
+	}
+		char *word3 = calloc(strlen(subAliases(word2))+1,1);
+		strcpy(word3, subAliases(word2));
+		free(word2);
+		word2 = calloc(strlen(word3)+1,1);
+		strcpy(word2, word3);
+		free(word3);
+	}
+	free(word2);
 	for (int i = 0; i < aliasIndex; i++) {
-		
+		/*
 		if((strcmp(aliasTable.name[i], word) == 0) && (strcmp(aliasTable.word[i], name) == 0)){
 			printf("Error, expansion of \"%s\" would create a loop.\n", name);
 			return 1;
 		}
-		else if(strcmp(aliasTable.name[i], name) == 0) {
+		*/
+		if(strcmp(aliasTable.name[i], name) == 0) {
 			strcpy(aliasTable.word[i], word);
 			return 1;
 		}

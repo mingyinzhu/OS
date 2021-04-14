@@ -66,7 +66,7 @@ alias {alias1 = true; return ALIAS;}
 							free( yycopy );
                     } 
 						else {
-							yylval.string = strdup(yytext);
+							yylval.string = strdup(wildcard(yytext));
 							return WORD;
                     };
 					}

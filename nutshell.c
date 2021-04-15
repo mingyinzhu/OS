@@ -196,7 +196,7 @@ void execute_other_commands()
 }
 
 int setEnv(char *var, char *word){
-    if(expand == true){
+    if(expand){
     char *cwd = get_current_dir_name();
     char *word1 = replaceString(word,"..", dirname(strdup(cwd)));
     char *word2 = replaceString(word1,".", cwd);
@@ -238,7 +238,7 @@ int unsetEnv(char *var){
 
 int chgDir(char *dir){
 	char *dir2;
-    if(expand = true){
+    if(expand){
     	dir2 = strdup(replaceString(dir,"~", getenv("HOME")));
     }
     else{
@@ -250,8 +250,8 @@ int chgDir(char *dir){
             return 1;
         }
     setEnv("PWD", ".");
-    setEnv("HOME",".");
-    setEnv("PATH",".:/usr/bin");
+    //setEnv("HOME",".");
+    //setEnv("PATH",".:/usr/bin");
 
     return 1;
 }

@@ -325,7 +325,6 @@ int main()
     expand = true;
     setEnv("HOME",".");
     setEnv("PATH",".:/usr/bin");
-
     aliasIndex = 0;
 	printf("\033[0;35m");
         printf("FSMZ$ ");

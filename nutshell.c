@@ -258,6 +258,7 @@ char* wildcard(char *word){
     }
     */
     if(cnt == 0){
+       
         char *word1 = delChar(word, '*');
         char *word2 = delChar(word1, '?');
         strcpy(files[cnt], word2);
@@ -265,6 +266,7 @@ char* wildcard(char *word){
         free(word1);
         free(word2);
     }
+    
     char final[12927];
     strcpy(final, files[0]);
     for(int i = 1;i < cnt;i++){
@@ -273,7 +275,7 @@ char* wildcard(char *word){
     }
     char *final2 = (char *)calloc(strlen(final) + 1,1);
     strcpy(final2, final);
-
+    
     return final2;
 }
 

@@ -15,7 +15,7 @@ int yyerrorlex (const char*s){
 
 %%
 
-\n	{return END;}
+[\r\n]	{return END;}
 ">"	{return IORIGHT;}
 "<"	{return IOLEFT;}
 ">>"	{return IO_RR;}
@@ -59,7 +59,7 @@ alias {alias1 = true; return ALIAS;}
                    }; 
 					}
 
-[\?\*~:.A-Za-z0-9!\/_-][\?\*~:.A-Za-z0-9!\/_-]*		{ expand = true;
+[,\?\*~:.A-Za-z0-9!\/_-][,\?\*~:.A-Za-z0-9!\/_-]*		{ expand = true;
 							if(ifAlias(yytext) && !unalias1 && !alias1 && !alias2) {
 							char *yycopy = strdup( subAliases(yytext) );
 							for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )
@@ -67,6 +67,7 @@ alias {alias1 = true; return ALIAS;}
 							free( yycopy );
                     } 
 						else {
+							
 							if(strcmp(yytext,wildcard(yytext)) == 0){
 							yylval.string = strdup(yytext);
 							return WORD;	

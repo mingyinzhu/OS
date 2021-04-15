@@ -31,7 +31,7 @@ name_alias = NULL;
 {
 	char *string;		
 }
-%token ERRSTDOUT ERRFILE WORD SETENV PENV END BYE UNSETENV CD ALIAS EOF1 UNALIAS INVALID
+%token ERRSTDOUT ERRFILE WORD SETENV PENV END CD BYE UNSETENV ALIAS EOF1 UNALIAS INVALID
 
 %type <string> pipes
 %type <string> line
@@ -83,7 +83,7 @@ pipes:
 						copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);						
-						current_command.args=malloc(1);
+						current_command.args=malloc(128*sizeof(char*));
 						current_command.num_args = 1;
 						
 						
@@ -91,7 +91,7 @@ pipes:
 	|cmds_args {				copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);
-						current_command.args=malloc(1);
+						current_command.args=malloc(128*sizeof(char*));
 						current_command.num_args = 1;
 						
 	}
@@ -141,28 +141,36 @@ line:
 	;
 
 commands:
-	commands builtin_cmd input_redir output_redir err_redir END { if(strcmp(bcommand_name,"setenv")==0)
+	commands builtin_cmd input_redir output_redir err_redir END { if(strcmp(bcommand_name,"setenv")==0){
 										setEnv(var_env, name_env);
-									if(strcmp(bcommand_name, "printenv")==0)
+										free(var_env);
+										free(name_env);
+									}
+									if(strcmp(bcommand_name, "printenv")==0){
 										printEnv();
-									if(strcmp(bcommand_name, "unsetenv")==0)
+									}
+									if(strcmp(bcommand_name, "unsetenv")==0){
 										unsetEnv(unset_var);
-									if(strcmp(bcommand_name ,"chgDir")==0)
+										free(unset_var);
+									}
+									if(strcmp(bcommand_name ,"chgDir")==0){
 										chgDir(directory);
-									if(strcmp(bcommand_name, "runSetAlias")==0)
+										free(directory);
+									}
+									if(strcmp(bcommand_name, "runSetAlias")==0){
 										runSetAlias(var_alias,name_alias);
-									if(strcmp(bcommand_name, "printAlias")==0)
+										free(var_alias);
+										free(name_alias);
+									}
+									if(strcmp(bcommand_name, "printAlias")==0){
 										printAlias();
-									if(strcmp(bcommand_name,"rmAlias")==0)
+									}
+									if(strcmp(bcommand_name,"rmAlias")==0){
 										rmAlias(unalias_var);
+										free(unalias_var);
+									}
 									free(bcommand_name);
-									free(var_env);
-									free(name_env);
-									free(unset_var);
-									free(directory);
-									free(var_alias);
-									free(name_alias);
-									free(unalias_var);
+								
 									return 1;}
 	|commands line {return 1;}
 	|{}

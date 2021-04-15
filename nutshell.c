@@ -20,9 +20,12 @@ extern char **environ;
 void insert_arg(struct basic_command* Command, char* arg)
 {
 	Command -> num_args = Command -> num_args + 1;
-	if(Command -> num_args >  Command -> space_args)
+	//printf("num_args: %d", Command -> num_args);
+	//printf("space_args: %d", Command -> space_args);
+	if(Command -> num_args >=  Command -> space_args)
 	{
-		Command -> args = realloc(Command -> args, sizeof(Command ->args)*2);
+//		printf("resizing\n");
+		Command -> args = realloc(Command -> args, Command-> num_args *2*sizeof(char*));
 		Command -> space_args = sizeof(Command -> args);
 	}
 	Command -> args[Command -> num_args-1] = arg;
@@ -59,7 +62,8 @@ void execute_other_commands()
 	for(int i =0;i< indexCommands;i++)
 	{
 		insert_arg(&command_table[i],NULL);
-
+		insert_arg(&command_table[i],NULL);
+		//printf("%d",command_table[i].num_args);
 		//printf("Command %d: %s\n",i,command_table[i].name);
 		//if not the last command, make new pipe
 		if(i<indexCommands-1 && indexCommands > 1)
@@ -173,11 +177,13 @@ void execute_other_commands()
 			strcat(path_usr,command_table[i].name);
 
 			if(opendir(path_bin)){
+				printf("path: %s\n", path_bin);
 				execve(path_bin,command_table[i].args,env);
 				perror("execve");
 				exit(1);
 			}
 			else {
+				printf("path: %s\n", path_usr);
 				execve(path_usr,command_table[i].args,env);
 				perror("execve");
 				exit(1);
@@ -866,7 +872,7 @@ int main()
 	program = false;
 
 	current_command.num_args = 1;
-	current_command.args = malloc(1);
+	current_command.args = malloc(128*sizeof(char*));
         yyparse();
 	//printf("\033[0;35m");
         //printf("FSMZ$ ");

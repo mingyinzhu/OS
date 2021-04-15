@@ -202,10 +202,38 @@ void copyCommand(struct basic_command* current_command){
 		}
 
 void redirect(){
-		if(input_name)
-			freopen(input_name, "r", stdin);
-		if(output_name)
-			freopen(output_name, "w+", stdout);
+		if(input_name!=NULL)
+			{
+				input=open(input_name, O_RDWR); //input file descripter
+				if(input == -1)
+				{
+					perror("invalid input file\n");
+					exit(1);
+				}
+				else{
+					close(0);
+					dup2(input,0);
+					close(input);
+				}
+			}//end if statement
+
+			//if it's the last command, and there is output redirection, set stdout to output file
+			if(output_name!=NULL)
+			{
+				if(append)
+					output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(output == -1)
+				{
+					perror("error opening/making output file\n");
+					exit(1);
+				}
+				close(1); //close the stdout
+				dup2(output,1);
+				close(output);
+			}//end if statement
+			
 		if(err_name)
 		{
 			if(err_name == "2>&1")

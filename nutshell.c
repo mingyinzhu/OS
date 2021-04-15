@@ -62,6 +62,7 @@ void execute_other_commands()
 	{
 		insert_arg(&command_table[i],NULL);
 
+		//printf("Command %d: %s\n",i,command_table[i].name);
 		//if not the last command, make new pipe
 		if(i<indexCommands-1 && indexCommands > 1)
 		{
@@ -138,7 +139,7 @@ void execute_other_commands()
 			}
 
 			//execute command
-			//printf("Executing: %s\n", command_table[i].name);
+
 			char* path_bin = malloc(strlen("/bin/")+strlen(command_table[i].name) +1);
 			strcpy(path_bin, "/bin/");
 			strcat(path_bin,command_table[i].name);
@@ -409,6 +410,7 @@ int main()
 
     while(1){
         indexCommands=0;
+	num_words = 0;
 	input_name = NULL;
 	output_name = NULL;
 	err_name = NULL;

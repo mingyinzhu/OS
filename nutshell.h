@@ -12,6 +12,7 @@ struct basic_command
 
 struct basic_command command_table[128];
 int indexCommands;
+int num_words;
 char* input_name;
 char* output_name;
 char* err_name;

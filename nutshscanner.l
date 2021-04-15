@@ -39,6 +39,7 @@ alias {alias1 = true; return ALIAS;}
 						char* env_name = getenv(env_var);
 						if(env_name!=NULL){
 							yylval.string = strdup(env_name);
+							num_words = num_words + 1;
 							return WORD;
 						}
 						else{
@@ -46,30 +47,32 @@ alias {alias1 = true; return ALIAS;}
 						}
 						}
 [\"\'][[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*[\"\']	{ expand = false;
-						yylval.string = strndup(yytext+1, yyleng-2);
-						if(ifAlias(yylval.string) && !unalias1 && !alias1 && !alias2) {
-							char *yycopy = strdup( subAliases(yylval.string) );
-							for ( int i = strlen(subAliases(yylval.string)) - 1; i >= 0; --i )
-								unput( yycopy[i] );
-							free( yycopy );
-                   } 
-		    else {
+								yylval.string = strndup(yytext+1, yyleng-2);
+								num_words = num_words + 1;
+								if(ifAlias(yylval.string) && !unalias1 && !alias1 && !alias2 && num_words==1) {
+									char *yycopy = strdup( subAliases(yylval.string) );
+									for ( int i = strlen(subAliases(yylval.string)) - 1; i >= 0; --i )
+										unput( yycopy[i] );
+									free( yycopy );
+								} 
+								else {
             
-                      return WORD;
-                   }; 
-					}
+									return WORD;
+								}; 
+							}
 
-[=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]*		{ expand = true;
-							if(ifAlias(yytext) && !unalias1 && !alias1 && !alias2) {
-							char *yycopy = strdup( subAliases(yytext) );
-							for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )
-								unput( yycopy[i] );
-							free( yycopy );
-                    } 
+[=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]*	{	num_words = num_words + 1;
+								expand = true;
+								if(ifAlias(yytext) && !unalias1 && !alias1 && !alias2 && num_words == 1) {
+								char *yycopy = strdup( subAliases(yytext) );
+								for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )
+									unput( yycopy[i] );
+								free( yycopy );
+							}	 
 						else {
 							if(strcmp(yytext,wildcard(yytext)) == 0){
-							yylval.string = strdup(yytext);
-							return WORD;	
+								yylval.string = strdup(yytext);
+								return WORD;	
 							}
 							else{
 								char *yycopy2 = strdup( wildcard(yytext) );
@@ -78,9 +81,9 @@ alias {alias1 = true; return ALIAS;}
 							free( yycopy2 );
 							}
 							
-                    };
+						    };
 					}
 			
-.	{	/*invalid token*/
-		return INVALID;}
+.	{ return INVALID; }
+
 %%

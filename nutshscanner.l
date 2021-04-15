@@ -34,10 +34,10 @@ unalias {unalias1 = true; return UNALIAS;}
 alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}
 
-./[=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]* {program = true;
+	/*./[=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]* {program = true;
 							yylval.string = strndup(yytext+2, yyleng-2);
 							return WORD;
-						}
+						}*/
 
 \$\{[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*\}	{
 						char* env_var = strndup(yytext+2, yyleng-3);
@@ -51,10 +51,27 @@ alias {alias1 = true; return ALIAS;}
 							printf("Could not substitute variable\n");
 						}
 						}
-[\"\'][[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*[\"\']	{ expand = false;
+\"\$\{[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*\}\"	{
+						char* env_var = strndup(yytext+3, yyleng-5);
+						char* env_name = getenv(env_var);
+						if(env_name!=NULL){
+							if(env_name[0] ==34 && env_name[strlen(env_name)-1] == 34)
+								env_name = strndup(env_name+1,strlen(env_name)-1);
+							yylval.string = strdup(env_name);
+							num_words = num_words + 1;
+							return WORD;
+						}
+						else{
+							printf("Could not substitute variable\n");
+						}
+						}
+
+
+
+[\"\'][[ {}\$~:.A-Za-z0-9!\/_-][ {}\$~:.A-Za-z0-9!\/_-]*[\"\']	{ expand = false;
 								yylval.string = strndup(yytext+1, yyleng-2);
 								num_words = num_words + 1;
-								if(ifAlias(yylval.string) && !unalias1 && !alias1 && !alias2 && num_words == 1) {
+								if(ifAlias(yylval.string) && !unalias1 && !alias1 && !alias2 ) {
 									char *yycopy = strdup( subAliases(yylval.string) );
 									for ( int i = strlen(subAliases(yylval.string)) - 1; i >= 0; --i )
 										unput( yycopy[i] );
@@ -68,7 +85,7 @@ alias {alias1 = true; return ALIAS;}
 
 [=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]*	{	num_words = num_words + 1;
 								expand = true;
-								if(ifAlias(yytext) && !unalias1 && !alias1 && !alias2 && num_words == 1) {
+								if(ifAlias(yytext) && !unalias1 && !alias1 && !alias2) {
 								char *yycopy = strdup( subAliases(yytext) );
 								for ( int i = strlen(subAliases(yytext)) - 1; i >= 0; --i )
 									unput( yycopy[i] );

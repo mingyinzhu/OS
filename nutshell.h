@@ -22,6 +22,16 @@ bool program;
 struct basic_command current_command;
 
 bool expand;
+bool command_alias;
+
+char* unalias_var;
+char* directory;
+char* unset_var;
+char* var_env;
+char* name_env;
+char* bcommand_name;
+char* var_alias;
+char* name_alias;
 
 
 void insert_arg(struct basic_command* Command, char* arg);

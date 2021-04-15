@@ -14,6 +14,17 @@ int runSetAlias(char *name, char *word);
 void copyCommand(struct basic_command* current_command);
 void redirect();
 
+/*
+unalias_var = NULL;
+directory = NULL;
+unset_var = NULL;
+var_env = NULL;
+name_env = NULL;
+bcommand_name = NULL;
+var_alias = NULL;
+name_alias = NULL;
+*/
+
 %}
 %define parse.error verbose
 %union
@@ -43,14 +54,14 @@ void redirect();
 
 builtin_cmd:
 		BYE	{exit(1);}
-		| SETENV WORD WORD {alias2 = false; setEnv($2, $3);};
-		| PENV		{printEnv(); };
-		| UNSETENV WORD {alias2 = false; unsetEnv($2);};	
-		| CD WORD {alias2 = false; chgDir($2);}
-		| CD {alias2 = false; chgDir("~");}
-		| ALIAS WORD WORD {alias1 = false; runSetAlias($2, $3);}
-		| ALIAS {alias1 = false; printAlias(); }
-		| UNALIAS WORD {unalias1 = false; rmAlias($2); }
+		| SETENV WORD WORD {alias2 = false; bcommand_name = "setenv"; var_env = $2; name_env = $3;};
+		| PENV		{bcommand_name = "printenv"; };
+		| UNSETENV WORD {alias2 = false; bcommand_name = "unsetenv"; unset_var = $2;};	
+		| CD WORD {alias2 = false; bcommand_name = "chgDir"; directory = $2;}
+		| CD {alias2 = false; bcommand_name = "chgDir"; directory = "~";}
+		| ALIAS WORD WORD {alias1 = false; bcommand_name = "runSetAlias"; var_alias = $2; name_alias= $3;}
+		| ALIAS {alias1 = false; bcommand_name = "printAlias"; }
+		| UNALIAS WORD {unalias1 = false; bcommand_name = "rmAlias"; unalias_var = $2; }
 		| EOF1 {printf("\n"); exit(1); }
 
 arguments:
@@ -130,7 +141,20 @@ line:
 	;
 
 commands:
-	commands builtin_cmd input_redir output_redir err_redir END{
+	commands builtin_cmd input_redir output_redir err_redir END { if(bcommand_name == "setenv")
+										setEnv(var_env, name_env);
+									if(bcommand_name == "printenv")
+										printEnv();
+									if(bcommand_name == "unsetenv")
+										unsetEnv(unset_var);
+									if(bcommand_name == "chgDir")
+										chgDir(directory);
+									if(bcommand_name == "runSetAlias")
+										runSetAlias(var_alias,name_alias);
+									if(bcommand_name == "printAlias")
+										printAlias();
+									if(bcommand_name == "rmAlias")
+										rmAlias(unalias_var);
 									return 1;}
 	|commands line {return 1;}
 	|{}
@@ -203,47 +227,3 @@ void copyCommand(struct basic_command* current_command){
 		command_table[indexCommands].num_args = current_command->num_args;
 		}
 
-void redirect(){
-		int input;
-		int output;
-		if(input_name!=NULL)
-			{
-				input=open(input_name, O_RDWR); //input file descripter
-				if(input == -1)
-				{
-					perror("invalid input file\n");
-					exit(1);
-				}
-				else{
-					close(0);
-					dup2(input,0);
-					close(input);
-				}
-			}//end if statement
-
-			//if it's the last command, and there is output redirection, set stdout to output file
-			if(output_name!=NULL)
-			{
-				if(append)
-					output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-				else
-					output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-				if(output == -1)
-				{
-					perror("error opening/making output file\n");
-					exit(1);
-				}
-				close(1); //close the stdout
-				dup2(output,1);
-				close(output);
-			}//end if statement
-			
-		if(err_name)
-		{
-			if(err_name == "2>&1")
-				dup2(1,2);
-			else
-				freopen(err_name, "w+", stderr);
-		}
-
-}

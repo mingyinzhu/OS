@@ -41,11 +41,11 @@ void redirect();
 
 builtin_cmd:
 		BYE	{exit(1);}
-		| SETENV WORD WORD {setEnv($2, $3);};
+		| SETENV WORD WORD {alias2 = false; setEnv($2, $3);};
 		| PENV		{printEnv(); };
-		| UNSETENV WORD {unsetEnv($2);};	
-		| CD WORD {chgDir($2);}
-		| CD {chgDir("~");}
+		| UNSETENV WORD {alias2 = false; unsetEnv($2);};	
+		| CD WORD {alias2 = false; chgDir($2);}
+		| CD {alias2 = false; chgDir("~");}
 		| ALIAS WORD WORD {alias1 = false; runSetAlias($2, $3);}
 		| ALIAS {alias1 = false; printAlias(); }
 		| UNALIAS WORD {unalias1 = false; rmAlias($2); }

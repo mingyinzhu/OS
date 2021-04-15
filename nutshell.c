@@ -139,6 +139,11 @@ void execute_other_commands()
 			}
 
 			//execute command
+			if(program){
+				execve(command_table[i].name, command_table[i].args,env);
+				perror("execve");
+				exit(1);
+			}
 
 			char* path_bin = malloc(strlen("/bin/")+strlen(command_table[i].name) +1);
 			strcpy(path_bin, "/bin/");
@@ -414,6 +419,8 @@ int main()
 	input_name = NULL;
 	output_name = NULL;
 	err_name = NULL;
+	program = false;
+
 	current_command.num_args = 1;
 	current_command.args = malloc(1);
         yyparse();

@@ -18,8 +18,11 @@ char* output_name;
 char* err_name;
 bool background;
 bool append;
+bool program;
 struct basic_command current_command;
+
 bool expand;
+
 
 void insert_arg(struct basic_command* Command, char* arg);
 void execute_other_commands();

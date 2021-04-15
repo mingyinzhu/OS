@@ -1,5 +1,7 @@
 
 %{
+#include <fcntl.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -202,6 +204,8 @@ void copyCommand(struct basic_command* current_command){
 		}
 
 void redirect(){
+		int input;
+		int output;
 		if(input_name!=NULL)
 			{
 				input=open(input_name, O_RDWR); //input file descripter

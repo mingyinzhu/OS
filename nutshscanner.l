@@ -34,6 +34,11 @@ unalias {unalias1 = true; return UNALIAS;}
 alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}
 
+./[=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]* {program = true;
+							yylval.string = strndup(yytext+2, yyleng-2);
+							return WORD;
+						}
+
 \$\{[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*\}	{
 						char* env_var = strndup(yytext+2, yyleng-3);
 						char* env_name = getenv(env_var);
@@ -49,7 +54,7 @@ alias {alias1 = true; return ALIAS;}
 [\"\'][[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*[\"\']	{ expand = false;
 								yylval.string = strndup(yytext+1, yyleng-2);
 								num_words = num_words + 1;
-								if(ifAlias(yylval.string) && !unalias1 && !alias1 && !alias2 && num_words==1) {
+								if(ifAlias(yylval.string) && !unalias1 && !alias1 && !alias2 && num_words == 1) {
 									char *yycopy = strdup( subAliases(yylval.string) );
 									for ( int i = strlen(subAliases(yylval.string)) - 1; i >= 0; --i )
 										unput( yycopy[i] );

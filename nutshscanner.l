@@ -15,7 +15,7 @@ int yyerrorlex (const char*s){
 
 %%
 
-\n	{return END;}
+[\r\n]	{return END;}
 ">"	{return IORIGHT;}
 "<"	{return IOLEFT;}
 ">>"	{return IO_RR;}
@@ -34,10 +34,6 @@ unalias {unalias1 = true; return UNALIAS;}
 alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}
 
-	/*./[=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]* {program = true;
-							yylval.string = strndup(yytext+2, yyleng-2);
-							return WORD;
-						}*/
 
 \$\{[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*\}	{
 						char* env_var = strndup(yytext+2, yyleng-3);

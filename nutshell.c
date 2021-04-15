@@ -38,11 +38,13 @@ void execute_other_commands()
 	pid_t wpid;
 	int status;
 
-	int stdin = dup(0);
-	int stdout = dup(1);
+	int st_din = dup(0);
+	int st_dout = dup(1);
+	int st_derr = dup(2);
 
 	int input;
 	int output;
+	int err;
 
 	int new_fd[2];
 	int old_fd[2];
@@ -50,17 +52,10 @@ void execute_other_commands()
 	if(indexCommands>1)
 		pipe(old_fd);
 
-	//redirection for stderr
-	if(err_name){
-		if(err_name == "2>&1")
-			dup2(1,2);
-		else
-			freopen(err_name, "w", stderr);
-	}
-
 	//execute commands and pipe
 	//printf("number of commands: %d\n", indexCommands);
 
+	//printf("err_name: %s\n", err_name);
 	for(int i =0;i< indexCommands;i++)
 	{
 		insert_arg(&command_table[i],NULL);
@@ -91,7 +86,6 @@ void execute_other_commands()
 					exit(1);
 				}
 				else{
-					close(0);
 					dup2(input,0);
 					close(input);
 				}
@@ -100,6 +94,7 @@ void execute_other_commands()
 			//if it's the last command, and there is output redirection, set stdout to output file
 			if(i==indexCommands-1 && output_name!=NULL)
 			{
+				//printf("Entered output redir\n");
 				if(append)
 					output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
 				else
@@ -109,33 +104,54 @@ void execute_other_commands()
 					perror("error opening/making output file\n");
 					exit(1);
 				}
-				close(1); //close the stdout
+
 				dup2(output,1);
 				close(output);
 			}//end if statement
 
+			if(err_name!=NULL)
+			{
+				if(strcmp(err_name, "2>&1") ==0)
+				{
+					dup2(1, 2);
+					close(1);
+				}
+				else{
+
+				if(append)
+					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(input == -1)
+				{
+					perror("error with opening/making error file\n");
+					exit(1);
+				}
+				else{
+					dup2(err,2);
+					close(err);
+			}
+		}//end else statement
+	}
+
 			if(i==0 && indexCommands>1) //if first command, close stdout and dup output side of new pipe
 			{
-				close(1);
 				dup2(new_fd[1],1);
 				close(new_fd[0]);
 				close(new_fd[1]);
 			}
 			else if(i<indexCommands-1 && indexCommands>1) //if not first or last command, close both stdin and stdout, then dup input side of old pipe and output side of new pipe
 			{
-				close(0);
 				dup2(old_fd[0],0);
 				close(old_fd[0]);
 				close(old_fd[1]);
 
-				close(1);
 				dup2(new_fd[1],1);
 				close(new_fd[0]);
 				close(new_fd[1]);
 			}
 			else if(i==indexCommands-1 && indexCommands>1){ //if last command, close stdin and dup the input side of old pipe
 
-				close(0);
 				dup2(old_fd[0],0);
 				close(old_fd[0]);
 				close(old_fd[1]);
@@ -187,9 +203,11 @@ void execute_other_commands()
 		} //end of parent
 	}//end of for loop
 
+
+
 		if(background==false)
-			//while((wpid = wait(&status))>0);
-			waitpid(pid,NULL,0);
+			while((wpid = wait(&status))>0);
+			//waitpid(pid,NULL,0);
 
 		if(indexCommands>1){
 			close(old_fd[0]);
@@ -197,18 +215,21 @@ void execute_other_commands()
 			close(new_fd[0]);
 			close(new_fd[1]);
 		}
-		dup2(stdin, 0);
-		dup2(stdout, 1);
-		close(stdin);
-		close(stdout);
+		dup2(st_din, 0);
+		dup2(st_dout, 1);
+		dup2(st_derr, 2);
+		close(st_derr);
+		close(st_din);
+		close(st_dout);
 }
 
 int setEnv(char *var, char *word){
 	int input;
 	int output;
-	int stdout = dup(1);
-	int stdin = dup(0);
-
+	int err;
+	int st_dout = dup(1);
+	int st_din = dup(0);
+	int st_derr = dup(2);
 	if(input_name!=NULL)
    {
 	input=open(input_name, O_RDWR); //input file descripter
@@ -240,13 +261,29 @@ int setEnv(char *var, char *word){
 		dup2(output,1);
 		close(output);
 	}//end if statement
+	if(err_name!=NULL)
+			{
+				if(strcmp(err_name, "2>&1") ==0)
+				{
+					dup2(1, 2);
+					close(1);
+				}
+				else{
 
-	//redirection for stderr
-	if(err_name){
-		if(err_name == "2>&1")
-			dup2(1,2);
-		else
-			freopen(err_name, "w", stderr);
+				if(append)
+					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(input == -1)
+				{
+					perror("error with opening/making error file\n");
+					exit(1);
+				}
+				else{
+					dup2(err,2);
+					close(err);
+			}
+		}//end else statement
 	}
 
 
@@ -264,10 +301,12 @@ int setEnv(char *var, char *word){
     else{
 	setenv(var, word, 1);
     }
-		dup2(stdout, 1);
-		dup2(stdin,0);
-		close(stdout);
-		close(stdin);
+		dup2(st_dout, 1);
+		dup2(st_din,0);
+		dup2(st_derr, 2);
+		close(st_dout);
+		close(st_din);
+		close(st_derr);
 
     return 1;
 }
@@ -275,68 +314,11 @@ int setEnv(char *var, char *word){
 int printEnv(){
 	int input;
 	int output;
-	int stdout = dup(1);
-	int stdin = dup(0);
-
-	    if(input_name!=NULL)
-	   {
-	input=open(input_name, O_RDWR); //input file descripter
-	if(input == -1)
-		{
-			perror("invalid input file\n");
-			exit(1);
-		}
-	else{
-		close(0);
-		dup2(input,0);
-		close(input);
-	}
-    }//end if statement
-
-	//if it's the last command, and there is output redirection, set stdout to output file
-    if(output_name!=NULL)
-    {
-	if(append)
-		output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-	else
-		output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-	if(output == -1)
-	{
-		perror("error opening/making output file\n");
-		exit(1);
-	}
-		close(1); //close the stdout
-		dup2(output,1);
-		close(output);
-	}//end if statement
-
-	//redirection for stderr
-	if(err_name){
-		if(err_name == "2>&1")
-			dup2(1,2);
-		else
-			freopen(err_name, "w", stderr);
-	}
-
-   for(char **env = environ; *env; env++){
-       puts(*env);
-   }
-
-		dup2(stdout, 1);
-		dup2(stdin,0);
-		close(stdout);
-		close(stdin);
-    return 1;
-}
-
-int unsetEnv(char *var){
-	int input;
-	int output;
-
-	int stdin;
-	int stdout;
-
-	    if(input_name!=NULL)
+	int err;
+	int std_out = dup(1);
+	int std_in = dup(0);
+	int std_err = dup(2);
+	if(input_name!=NULL)
    {
 	input=open(input_name, O_RDWR); //input file descripter
 	if(input == -1)
@@ -367,16 +349,106 @@ int unsetEnv(char *var){
 		dup2(output,1);
 		close(output);
 	}//end if statement
+	if(err_name!=NULL)
+			{
+				if(strcmp(err_name, "2>&1") ==0)
+				{
+					dup2(1, 2);
+					close(1);
+				}
+				else{
 
-	//redirection for stderr
-	if(err_name){
-		if(err_name == "2>&1")
-			dup2(1,2);
-		else
-			freopen(err_name, "w", stderr);
+				if(append)
+					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(input == -1)
+				{
+					perror("error with opening/making error file\n");
+					exit(1);
+				}
+				else{
+					dup2(err,2);
+					close(err);
+			}
+		}//end else statement
 	}
 
+   for(char **env = environ; *env; env++){
+       puts(*env);
+   }
 
+		dup2(std_out, 1);
+		dup2(std_in,0);
+		dup2(std_err,2);
+		close(std_err);
+		close(std_out);
+		close(std_in);
+    return 1;
+}
+
+int unsetEnv(char *var){
+int input;
+	int output;
+	int err;
+	int std_out = dup(1);
+	int std_in = dup(0);
+	int std_err = dup(2);
+	if(input_name!=NULL)
+   {
+	input=open(input_name, O_RDWR); //input file descripter
+	if(input == -1)
+		{
+			perror("invalid input file\n");
+			exit(1);
+		}
+	else{
+		close(0);
+		dup2(input,0);
+		close(input);
+	}
+    }//end if statement
+
+	//if it's the last command, and there is output redirection, set stdout to output file
+    if(output_name!=NULL)
+    {
+	if(append)
+		output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+	else
+		output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+	if(output == -1)
+	{
+		perror("error opening/making output file\n");
+		exit(1);
+	}
+		close(1); //close the stdout
+		dup2(output,1);
+		close(output);
+	}//end if statement
+	if(err_name!=NULL)
+			{
+				if(strcmp(err_name, "2>&1") ==0)
+				{
+					dup2(1, 2);
+					close(1);
+				}
+				else{
+
+				if(append)
+					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(input == -1)
+				{
+					perror("error with opening/making error file\n");
+					exit(1);
+				}
+				else{
+					dup2(err,2);
+					close(err);
+			}
+		}//end else statement
+	}
 
     if(strcmp(var, "HOME") == 0){
         printf("Can't unset HOME variable\n");
@@ -390,22 +462,24 @@ int unsetEnv(char *var){
 
     unsetenv(var);
 
-		dup2(stdin, 0);
-		dup2(stdout, 1);
-		close(stdin);
-		close(stdout);
+		dup2(std_in, 0);
+		dup2(std_out, 1);
+		dup2(std_err,2);
+		close(std_err);
+		close(std_in);
+		close(std_out);
 
     return 1;
 }
 
 int chgDir(char *dir){
-
-	int input;
+int input;
 	int output;
-	int stdin;
-	int stdout;
-
-	    if(input_name!=NULL)
+	int err;
+	int std_out = dup(1);
+	int std_in = dup(0);
+	int std_err = dup(2);
+	if(input_name!=NULL)
    {
 	input=open(input_name, O_RDWR); //input file descripter
 	if(input == -1)
@@ -436,16 +510,30 @@ int chgDir(char *dir){
 		dup2(output,1);
 		close(output);
 	}//end if statement
+	if(err_name!=NULL)
+			{
+				if(strcmp(err_name, "2>&1") ==0)
+				{
+					dup2(1, 2);
+					close(1);
+				}
+				else{
 
-	//redirection for stderr
-	if(err_name){
-		if(err_name == "2>&1")
-			dup2(1,2);
-		else
-			freopen(err_name, "w", stderr);
+				if(append)
+					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(input == -1)
+				{
+					perror("error with opening/making error file\n");
+					exit(1);
+				}
+				else{
+					dup2(err,2);
+					close(err);
+			}
+		}//end else statement
 	}
-
-
 
 	char *dir2;
     if(expand){
@@ -463,10 +551,12 @@ int chgDir(char *dir){
     //setEnv("HOME",".");
     //setEnv("PATH",".:/usr/bin");
 
-		dup2(stdin, 0);
-		dup2(stdout, 1);
-		close(stdin);
-		close(stdout);
+		dup2(std_in, 0);
+		dup2(std_out, 1);
+		dup2(std_err,2);
+		close(std_err);
+		close(std_in);
+		close(std_out);
 
     return 1;
 }
@@ -505,13 +595,13 @@ char* replaceString(char* word, char *old, char *new1){
 }
 
 int printAlias(){
-	int input;
+int input;
 	int output;
-
-	int stdin = dup(0);
-	int stdout = dup(1);
-
-    if(input_name!=NULL)
+	int err;
+	int std_out = dup(1);
+	int std_in = dup(0);
+	int std_err = dup(2);
+	if(input_name!=NULL)
    {
 	input=open(input_name, O_RDWR); //input file descripter
 	if(input == -1)
@@ -542,38 +632,53 @@ int printAlias(){
 		dup2(output,1);
 		close(output);
 	}//end if statement
+	if(err_name!=NULL)
+			{
+				if(strcmp(err_name, "2>&1") ==0)
+				{
+					dup2(1, 2);
+					close(1);
+				}
+				else{
 
-	//redirection for stderr
-	if(err_name){
-		if(err_name == "2>&1")
-			dup2(1,2);
-		else
-			freopen(err_name, "w", stderr);
+				if(append)
+					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(input == -1)
+				{
+					perror("error with opening/making error file\n");
+					exit(1);
+				}
+				else{
+					dup2(err,2);
+					close(err);
+			}
+		}//end else statement
 	}
-
-
 
     for(int i = 0; i<aliasIndex; i++){
         printf("%s=%s\n", aliasTable.name[i], aliasTable.word[i]);
     }
 
-		dup2(stdin, 0);
-		dup2(stdout, 1);
-		close(stdin);
-		close(stdout);
+		dup2(std_in, 0);
+		dup2(std_out, 1);
+		dup2(std_err ,2);
+		close(std_err);
+		close(std_in);
+		close(std_out);
 
     return 1;
 }
 
 int rmAlias(char *word){
-
 	int input;
 	int output;
-
-	int stdin;
-	int stdout;
-
-    if(input_name!=NULL)
+	int err;
+	int std_out = dup(1);
+	int std_in = dup(0);
+	int std_err = dup(2);
+	if(input_name!=NULL)
    {
 	input=open(input_name, O_RDWR); //input file descripter
 	if(input == -1)
@@ -604,15 +709,30 @@ int rmAlias(char *word){
 		dup2(output,1);
 		close(output);
 	}//end if statement
+	if(err_name!=NULL)
+			{
+				if(strcmp(err_name, "2>&1") ==0)
+				{
+					dup2(1, 2);
+					close(1);
+				}
+				else{
 
-	//redirection for stderr
-	if(err_name){
-		if(err_name == "2>&1")
-			dup2(1,2);
-		else
-			freopen(err_name, "w", stderr);
+				if(append)
+					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
+				else
+					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
+				if(input == -1)
+				{
+					perror("error with opening/making error file\n");
+					exit(1);
+				}
+				else{
+					dup2(err,2);
+					close(err);
+			}
+		}//end else statement
 	}
-
 
     for(int i = 0; i<aliasIndex; i++){
         if(strcmp(aliasTable.name[i], word) == 0){
@@ -629,10 +749,12 @@ int rmAlias(char *word){
             return 1;
         }
     }
-		dup2(stdin, 0);
-		dup2(stdout, 1);
-		close(stdin);
-		close(stdout);
+		dup2(std_in, 0);
+		dup2(std_out, 1);
+		dup2(std_err,2);
+		close(std_err);
+		close(std_in);
+		close(std_out);
 
     return 1;
 
@@ -728,9 +850,9 @@ int main()
     setEnv("PATH",".:/usr/bin");
 
     aliasIndex = 0;
-	printf("\033[0;35m");
-        printf("FSMZ$ ");
-        printf("\033[0m");
+	//printf("\033[0;35m");
+        //printf("FSMZ$ ");
+        //printf("\033[0m");
 
     //wildcard("?sup.*");
 
@@ -746,9 +868,9 @@ int main()
 	current_command.num_args = 1;
 	current_command.args = malloc(1);
         yyparse();
-	printf("\033[0;35m");
-        printf("FSMZ$ ");
-        printf("\033[0m");
+	//printf("\033[0;35m");
+        //printf("FSMZ$ ");
+        //printf("\033[0m");
  }
 
     return 0;

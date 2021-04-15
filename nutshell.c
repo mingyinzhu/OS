@@ -22,9 +22,9 @@ void insert_arg(struct basic_command* Command, char* arg)
 	Command -> num_args = Command -> num_args + 1;
 	//printf("num_args: %d", Command -> num_args);
 	//printf("space_args: %d", Command -> space_args);
-	if(Command -> num_args >=  Command -> space_args)
+	if(Command -> num_args >=  sizeof(Command->args)/sizeof(char*))
 	{
-//		printf("resizing\n");
+		//printf("resizing: %d\n", (int)(sizeof(Command->args)));
 		Command -> args = realloc(Command -> args, Command-> num_args *2*sizeof(char*));
 		Command -> space_args = sizeof(Command -> args);
 	}
@@ -177,13 +177,13 @@ void execute_other_commands()
 			strcat(path_usr,command_table[i].name);
 
 			if(opendir(path_bin)){
-				printf("path: %s\n", path_bin);
+				//printf("path: %s\n", path_bin);
 				execve(path_bin,command_table[i].args,env);
 				perror("execve");
 				exit(1);
 			}
 			else {
-				printf("path: %s\n", path_usr);
+				//printf("path: %s\n", path_usr);
 				execve(path_usr,command_table[i].args,env);
 				perror("execve");
 				exit(1);

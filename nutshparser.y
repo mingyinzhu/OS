@@ -52,22 +52,25 @@ builtin_cmd:
 		| EOF1 {printf("\n"); exit(1); }
 
 arguments:
-	arguments WORD {
+	arguments WORD { 
 			 insert_arg(&current_command, $2);
 	}
 	|{}
 	;
 
 cmds_args:
-	WORD arguments{
+	WORD arguments{	
 			current_command.name = strdup($1);
+
 	}
 	;
 
 pipes:
-	pipes PIPE cmds_args {			copyCommand(&current_command);
+	pipes PIPE cmds_args {	
+						copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);						
+						current_command.args=malloc(1);
 						current_command.num_args = 1;
 						
 						
@@ -75,6 +78,7 @@ pipes:
 	|cmds_args {				copyCommand(&current_command);
 						indexCommands = indexCommands + 1;
 						free(current_command.args);
+						current_command.args=malloc(1);
 						current_command.num_args = 1;
 						
 	}
@@ -88,10 +92,10 @@ input_redir:
 	;
 
 output_redir:
-	IO_RR WORD {
+	IO_RR WORD {	append = true;
 			output_name = strdup($2);
 	}			
-	|IORIGHT WORD {
+	|IORIGHT WORD {	append=false;
 			output_name = strdup($2);
 	}
 	|{}
@@ -108,8 +112,8 @@ err_redir:
 	;
 
 background:
-	AMPER
-	|
+	AMPER {background = true;}
+	| {background = false;}
 	;
 
 line:
@@ -186,13 +190,15 @@ int runSetAlias(char *name, char *word) {
 }
 
 void copyCommand(struct basic_command* current_command){
-		current_command -> args[0] = strdup(current_command->name);
-		command_table[indexCommands].args = malloc((current_command -> num_args+1)*sizeof(char*));
-		for(int i=0;i<current_command -> num_args;i++)
-			command_table[indexCommands].args[i] = strdup(current_command -> args[i]);	
-		command_table[indexCommands].args[current_command -> num_args] = NULL;
-		command_table[indexCommands].name = strdup(current_command -> name);
-		command_table[indexCommands].num_args = current_command -> num_args;
+		current_command->args[0] = strdup(current_command->name);
+		command_table[indexCommands].args = malloc((current_command->num_args+1)*sizeof(char*));
+		for(int i=0;i<current_command->num_args;i++){
+			if(current_command->args[i]!= NULL)
+				command_table[indexCommands].args[i] = strdup(current_command->args[i]);
+		}	
+		command_table[indexCommands].args[current_command->num_args] = NULL;
+		command_table[indexCommands].name = strdup(current_command->name);
+		command_table[indexCommands].num_args = current_command->num_args;
 		}
 
 void redirect(){

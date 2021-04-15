@@ -15,6 +15,8 @@ int indexCommands;
 char* input_name;
 char* output_name;
 char* err_name;
+bool background;
+bool append;
 struct basic_command current_command;
 bool expand;
 

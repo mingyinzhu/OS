@@ -174,8 +174,8 @@ int chgDir(char *dir){
             return 1;
         }
     setEnv("PWD", ".");
-    setEnv("HOME",".");
-    setEnv("PATH",".:/usr/bin");
+    //setEnv("HOME",".");
+    //setEnv("PATH",".:/usr/bin");
 
     return 1;
 }

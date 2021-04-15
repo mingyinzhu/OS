@@ -45,14 +45,13 @@ alias {alias1 = true; return ALIAS;}
 						}
 [\"\'][[ ~:.A-Za-z0-9!\/_-][ ~:.A-Za-z0-9!\/_-]*[\"\']	{ expand = false;
 						yylval.string = strndup(yytext+1, yyleng-2);
-						printf("%s\n", yylval.string);
 						if(ifAlias(yylval.string) && !unalias1 && !alias1) {
 							char *yycopy = strdup( subAliases(yylval.string) );
 							for ( int i = strlen(subAliases(yylval.string)) - 1; i >= 0; --i )
 								unput( yycopy[i] );
 							free( yycopy );
                    } 
-		    else {
+		    		else {
             
                       return WORD;
                    }; 

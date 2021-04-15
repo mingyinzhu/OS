@@ -162,7 +162,7 @@ int unsetEnv(char *var){
 
 int chgDir(char *dir){
 	char *dir2;
-    if(expand = true){
+    if(expand){
     	dir2 = strdup(replaceString(dir,"~", getenv("HOME")));
     }
     else{

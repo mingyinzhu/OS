@@ -54,14 +54,14 @@ name_alias = NULL;
 
 builtin_cmd:
 		BYE	{exit(1);}
-		| SETENV WORD WORD {alias2 = false; bcommand_name =strdup("setenv"); var_env = strdup($2); name_env = strdup($3);};
-		| PENV		{bcommand_name = strdup("printenv"); };
-		| UNSETENV WORD {alias2 = false; bcommand_name = strdup("unsetenv"); unset_var = strdup($2);};	
-		| CD WORD {alias2 = false; bcommand_name = strdup("chgDir"); directory = strdup($2);}
-		| CD {alias2 = false; bcommand_name = strdup("chgDir"); directory = strdup("~");}
-		| ALIAS WORD WORD {alias1 = false; bcommand_name = strdup("runSetAlias"); var_alias = strdup($2); name_alias= strdup($3);}
-		| ALIAS {alias1 = false; bcommand_name =strdup("printAlias"); }
-		| UNALIAS WORD {unalias1 = false; bcommand_name = strdup("rmAlias"); unalias_var = strdup($2); }
+		| SETENV WORD WORD {alias2 = false; bcommand_name = "setenv"; var_env = $2; name_env = $3;};
+		| PENV		{bcommand_name = "printenv"; };
+		| UNSETENV WORD {alias2 = false; bcommand_name = "unsetenv"; unset_var = $2;};	
+		| CD WORD {alias2 = false; bcommand_name = "chgDir"; directory = $2;}
+		| CD {alias2 = false; bcommand_name = "chgDir"; directory = "~";}
+		| ALIAS WORD WORD {alias1 = false; bcommand_name = "runSetAlias"; var_alias = $2; name_alias= $3;}
+		| ALIAS {alias1 = false; bcommand_name ="printAlias"; }
+		| UNALIAS WORD {unalias1 = false; bcommand_name = "rmAlias"; unalias_var = $2; }
 		| EOF1 {printf("\n"); exit(1); }
 
 arguments:
@@ -143,33 +143,33 @@ line:
 commands:
 	commands builtin_cmd input_redir output_redir err_redir END { if(strcmp(bcommand_name,"setenv")==0){
 										setEnv(var_env, name_env);
-										free(var_env);
-										free(name_env);
+										/*free(var_env);
+										free(name_env);*/
 									}
 									if(strcmp(bcommand_name, "printenv")==0){
 										printEnv();
 									}
 									if(strcmp(bcommand_name, "unsetenv")==0){
 										unsetEnv(unset_var);
-										free(unset_var);
+										/*free(unset_var);*/
 									}
 									if(strcmp(bcommand_name ,"chgDir")==0){
 										chgDir(directory);
-										free(directory);
+										/*free(directory);*/
 									}
 									if(strcmp(bcommand_name, "runSetAlias")==0){
 										runSetAlias(var_alias,name_alias);
-										free(var_alias);
-										free(name_alias);
+										/*free(var_alias);
+										free(name_alias);*/
 									}
 									if(strcmp(bcommand_name, "printAlias")==0){
 										printAlias();
 									}
 									if(strcmp(bcommand_name,"rmAlias")==0){
 										rmAlias(unalias_var);
-										free(unalias_var);
+										/*free(unalias_var);*/
 									}
-									free(bcommand_name);
+									/*free(bcommand_name);*/
 								
 									return 1;}
 	|commands line {return 1;}

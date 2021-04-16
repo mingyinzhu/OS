@@ -62,7 +62,7 @@ void execute_other_commands()
 	{
 		insert_arg(&command_table[i],NULL);
 		//printf("%d",command_table[i].num_args);
-		printf("Command %d: %s, %s\n",i,command_table[i].args[0], command_table[i].args[1]);
+		//printf("Command %d: %s, %s\n",i,command_table[i].args[0], command_table[i].args[1]);
 		//if not the last command, make new pipe
 		if(i<indexCommands-1 && indexCommands > 1)
 		{
@@ -177,13 +177,13 @@ void execute_other_commands()
 			if(opendir(path_bin)){
 				//printf("path: %s\n", path_bin);
 				execve(path_bin,command_table[i].args,env);
-				fprintf(stderr, "no command %s\n", path_bin);
+				fprintf(stderr, "no command %s\n", command_table[i].name);
 				exit(1);
 			}
 			else{
 				//printf("path: %s\n", path_usr);
 				execve(path_usr,command_table[i].args,env);
-				fprintf(stderr, "no command %s\n",path_usr);
+				fprintf(stderr, "no command %s\n",command_table[i].name);
 				exit(1);
 			}
 

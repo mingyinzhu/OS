@@ -230,69 +230,6 @@ void execute_other_commands()
 }
 
 int setEnv(char *var, char *word){
-	int input;
-	int output;
-	int err;
-	int st_dout = dup(1);
-	int st_din = dup(0);
-	int st_derr = dup(2);
-	if(input_name!=NULL)
-   {
-	input=open(input_name, O_RDWR); //input file descripter
-	if(input == -1)
-		{
-			perror("invalid input file\n");
-			exit(1);
-		}
-	else{
-		close(0);
-		dup2(input,0);
-		close(input);
-	}
-    }//end if statement
-
-	//if it's the last command, and there is output redirection, set stdout to output file
-    if(output_name!=NULL)
-    {
-	if(append)
-		output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-	else
-		output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-	if(output == -1)
-	{
-		perror("error opening/making output file\n");
-		exit(1);
-	}
-		close(1); //close the stdout
-		dup2(output,1);
-		close(output);
-	}//end if statement
-	if(err_name!=NULL)
-			{
-				if(strcmp(err_name, "2>&1") ==0)
-				{
-					dup2(1, 2);
-					close(1);
-				}
-				else{
-
-				if(append)
-					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-				else
-					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-				if(input == -1)
-				{
-					perror("error with opening/making error file\n");
-					exit(1);
-				}
-				else{
-					dup2(err,2);
-					close(err);
-			}
-		}//end else statement
-	}
-
-
     if(expand){
     char *cwd = get_current_dir_name();
     char *word1 = replaceString(word,"..", dirname(strdup(cwd)));
@@ -307,12 +244,6 @@ int setEnv(char *var, char *word){
     else{
 	setenv(var, word, 1);
     }
-		dup2(st_dout, 1);
-		dup2(st_din,0);
-		dup2(st_derr, 2);
-		close(st_dout);
-		close(st_din);
-		close(st_derr);
 
     return 1;
 }
@@ -394,68 +325,6 @@ int printEnv(){
 }
 
 int unsetEnv(char *var){
-int input;
-	int output;
-	int err;
-	int std_out = dup(1);
-	int std_in = dup(0);
-	int std_err = dup(2);
-	if(input_name!=NULL)
-   {
-	input=open(input_name, O_RDWR); //input file descripter
-	if(input == -1)
-		{
-			perror("invalid input file\n");
-			exit(1);
-		}
-	else{
-		close(0);
-		dup2(input,0);
-		close(input);
-	}
-    }//end if statement
-
-	//if it's the last command, and there is output redirection, set stdout to output file
-    if(output_name!=NULL)
-    {
-	if(append)
-		output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-	else
-		output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-	if(output == -1)
-	{
-		perror("error opening/making output file\n");
-		exit(1);
-	}
-		close(1); //close the stdout
-		dup2(output,1);
-		close(output);
-	}//end if statement
-	if(err_name!=NULL)
-			{
-				if(strcmp(err_name, "2>&1") ==0)
-				{
-					dup2(1, 2);
-					close(1);
-				}
-				else{
-
-				if(append)
-					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-				else
-					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-				if(input == -1)
-				{
-					perror("error with opening/making error file\n");
-					exit(1);
-				}
-				else{
-					dup2(err,2);
-					close(err);
-			}
-		}//end else statement
-	}
-
     if(strcmp(var, "HOME") == 0){
         printf("Can't unset HOME variable\n");
         return 1;
@@ -468,78 +337,11 @@ int input;
 
     unsetenv(var);
 
-		dup2(std_in, 0);
-		dup2(std_out, 1);
-		dup2(std_err,2);
-		close(std_err);
-		close(std_in);
-		close(std_out);
 
     return 1;
 }
 
 int chgDir(char *dir){
-int input;
-	int output;
-	int err;
-	int std_out = dup(1);
-	int std_in = dup(0);
-	int std_err = dup(2);
-	if(input_name!=NULL)
-   {
-	input=open(input_name, O_RDWR); //input file descripter
-	if(input == -1)
-		{
-			perror("invalid input file\n");
-			exit(1);
-		}
-	else{
-		close(0);
-		dup2(input,0);
-		close(input);
-	}
-    }//end if statement
-
-	//if it's the last command, and there is output redirection, set stdout to output file
-    if(output_name!=NULL)
-    {
-	if(append)
-		output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-	else
-		output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-	if(output == -1)
-	{
-		perror("error opening/making output file\n");
-		exit(1);
-	}
-		close(1); //close the stdout
-		dup2(output,1);
-		close(output);
-	}//end if statement
-	if(err_name!=NULL)
-			{
-				if(strcmp(err_name, "2>&1") ==0)
-				{
-					dup2(1, 2);
-					close(1);
-				}
-				else{
-
-				if(append)
-					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-				else
-					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-				if(input == -1)
-				{
-					perror("error with opening/making error file\n");
-					exit(1);
-				}
-				else{
-					dup2(err,2);
-					close(err);
-			}
-		}//end else statement
-	}
 
 	char *dir2;
     if(expand){
@@ -557,12 +359,6 @@ int input;
     //setEnv("HOME",".");
     //setEnv("PATH",".:/usr/bin");
 
-		dup2(std_in, 0);
-		dup2(std_out, 1);
-		dup2(std_err,2);
-		close(std_err);
-		close(std_in);
-		close(std_out);
 
     return 1;
 }
@@ -678,67 +474,6 @@ int input;
 }
 
 int rmAlias(char *word){
-	int input;
-	int output;
-	int err;
-	int std_out = dup(1);
-	int std_in = dup(0);
-	int std_err = dup(2);
-	if(input_name!=NULL)
-   {
-	input=open(input_name, O_RDWR); //input file descripter
-	if(input == -1)
-		{
-			perror("invalid input file\n");
-			exit(1);
-		}
-	else{
-		close(0);
-		dup2(input,0);
-		close(input);
-	}
-    }//end if statement
-
-	//if it's the last command, and there is output redirection, set stdout to output file
-    if(output_name!=NULL)
-    {
-	if(append)
-		output = open(output_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-	else
-		output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-	if(output == -1)
-	{
-		perror("error opening/making output file\n");
-		exit(1);
-	}
-		close(1); //close the stdout
-		dup2(output,1);
-		close(output);
-	}//end if statement
-	if(err_name!=NULL)
-			{
-				if(strcmp(err_name, "2>&1") ==0)
-				{
-					dup2(1, 2);
-					close(1);
-				}
-				else{
-
-				if(append)
-					err = open(err_name, O_CREAT|O_RDWR|O_APPEND, S_IRUSR|S_IWUSR);
-				else
-					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
-				if(input == -1)
-				{
-					perror("error with opening/making error file\n");
-					exit(1);
-				}
-				else{
-					dup2(err,2);
-					close(err);
-			}
-		}//end else statement
-	}
 
     for(int i = 0; i<aliasIndex; i++){
         if(strcmp(aliasTable.name[i], word) == 0){
@@ -747,20 +482,10 @@ int rmAlias(char *word){
                 strcpy(aliasTable.name[j], aliasTable.name[j+1]);
                 strcpy(aliasTable.word[j], aliasTable.word[j+1]);
             }
-		close(input);
-		close(output);
-		dup(0);
-		dup(1);
 
             return 1;
         }
     }
-		dup2(std_in, 0);
-		dup2(std_out, 1);
-		dup2(std_err,2);
-		close(std_err);
-		close(std_in);
-		close(std_out);
 
     return 1;
 
@@ -856,9 +581,9 @@ int main()
     setEnv("PATH",".:/usr/bin");
 
     aliasIndex = 0;
-	//printf("\033[0;35m");
-        //printf("FSMZ$ ");
-        //printf("\033[0m");
+	printf("\033[0;35m");
+        printf("FSMZ$ ");
+        printf("\033[0m");
 
     //wildcard("?sup.*");
 
@@ -874,9 +599,9 @@ int main()
 	current_command.num_args = 1;
 	current_command.args = malloc(128*sizeof(char*));
         yyparse();
-	//printf("\033[0;35m");
-        //printf("FSMZ$ ");
-        //printf("\033[0m");
+	printf("\033[0;35m");
+        printf("FSMZ$ ");
+        printf("\033[0m");
  }
 
     return 0;

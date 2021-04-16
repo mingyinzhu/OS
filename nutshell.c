@@ -26,7 +26,6 @@ void insert_arg(struct basic_command* Command, char* arg)
 	{
 		//printf("resizing: %d\n", (int)(sizeof(Command->args)));
 		Command -> args = realloc(Command -> args, Command-> num_args *2*sizeof(char*));
-		Command -> space_args = sizeof(Command -> args);
 	}
 	Command -> args[Command -> num_args-1] = arg;
 	Command -> args[Command -> num_args] = NULL;
@@ -62,9 +61,8 @@ void execute_other_commands()
 	for(int i =0;i< indexCommands;i++)
 	{
 		insert_arg(&command_table[i],NULL);
-		insert_arg(&command_table[i],NULL);
 		//printf("%d",command_table[i].num_args);
-		//printf("Command %d: %s\n",i,command_table[i].name);
+		printf("Command %d: %s, %s\n",i,command_table[i].args[0], command_table[i].args[1]);
 		//if not the last command, make new pipe
 		if(i<indexCommands-1 && indexCommands > 1)
 		{
@@ -75,7 +73,7 @@ void execute_other_commands()
 
 		if(pid <0) //error forking
 		{
-			printf("fork error\n");
+			fprintf(stderr,"fork error\n");
 			exit(1);
 		}
 		if(pid ==0 ) //child
@@ -86,7 +84,7 @@ void execute_other_commands()
 				input=open(input_name, O_RDWR); //input file descripter
 				if(input == -1)
 				{
-					perror("invalid input file\n");
+					fprintf(stderr,"invalid input file\n");
 					exit(1);
 				}
 				else{
@@ -105,7 +103,7 @@ void execute_other_commands()
 					output = open(output_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
 				if(output == -1)
 				{
-					perror("error opening/making output file\n");
+					fprintf(stderr,"error opening/making output file\n");
 					exit(1);
 				}
 
@@ -128,7 +126,7 @@ void execute_other_commands()
 					err = open(err_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR); //output file descripter
 				if(input == -1)
 				{
-					perror("error with opening/making error file\n");
+					fprintf(stderr, "error with opening/making error file\n");
 					exit(1);
 				}
 				else{
@@ -164,7 +162,7 @@ void execute_other_commands()
 			//execute command
 			if(command_table[i].name[0] == 46 && command_table[i].name[1]==47){
 				execve(command_table[i].name+2, command_table[i].args,env);
-				perror("execve");
+				fprintf(stderr, "unsuccessful execution of %s\n", command_table[i].name+2);
 				exit(1);
 			}
 
@@ -179,15 +177,16 @@ void execute_other_commands()
 			if(opendir(path_bin)){
 				//printf("path: %s\n", path_bin);
 				execve(path_bin,command_table[i].args,env);
-				perror("execve");
+				fprintf(stderr, "no command %s\n", path_bin);
 				exit(1);
 			}
-			else {
+			else{
 				//printf("path: %s\n", path_usr);
 				execve(path_usr,command_table[i].args,env);
-				perror("execve");
+				fprintf(stderr, "no command %s\n",path_usr);
 				exit(1);
 			}
+
 			free(path_bin);
 			free(path_usr);
 		}//end of child
@@ -212,8 +211,8 @@ void execute_other_commands()
 
 
 		if(background==false)
-			while((wpid = wait(&status))>0);
-			//waitpid(pid,NULL,0);
+			//while((wpid = wait(&status))>0);
+			waitpid(pid,NULL,0);
 
 		if(indexCommands>1){
 			close(old_fd[0]);

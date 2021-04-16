@@ -57,11 +57,11 @@ builtin_cmd:
 		| SETENV WORD WORD {alias2 = false; bcommand_name =strdup("setenv"); var_env = strdup($2); name_env = strdup($3);};
 		| PENV		{bcommand_name = strdup("printenv"); };
 		| UNSETENV WORD {alias2 = false; bcommand_name = strdup("unsetenv"); unset_var = strdup($2);};	
-		| CD WORD {alias2 = false; bcommand_name = strdup("chgDir"); directory = strdup($2);}
+		| CD WORD {alias2 = false; bcommand_name =strdup("chgDir"); directory =strdup($2);}
 		| CD {alias2 = false; bcommand_name = strdup("chgDir"); directory = strdup("~");}
 		| ALIAS WORD WORD {alias1 = false; bcommand_name = strdup("runSetAlias"); var_alias = strdup($2); name_alias= strdup($3);}
 		| ALIAS {alias1 = false; bcommand_name =strdup("printAlias"); }
-		| UNALIAS WORD {unalias1 = false; bcommand_name = strdup("rmAlias"); unalias_var = strdup($2); }
+		| UNALIAS WORD {unalias1 = false; bcommand_name =strdup("rmAlias"); unalias_var = strdup($2); }
 		| EOF1 {printf("\n"); exit(1); }
 
 arguments:
@@ -141,7 +141,7 @@ line:
 	;
 
 commands:
-	commands builtin_cmd input_redir output_redir err_redir END { if(strcmp(bcommand_name,"setenv")==0){
+	commands builtin_cmd input_redir output_redir err_redir END { if(strcmp(bcommand_name, "setenv")==0){
 										setEnv(var_env, name_env);
 										free(var_env);
 										free(name_env);

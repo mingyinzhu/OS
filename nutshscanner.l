@@ -39,9 +39,13 @@ alias {alias1 = true; return ALIAS;}
 						char* env_var = strndup(yytext+2, yyleng-3);
 						char* env_name = getenv(env_var);
 						if(env_name!=NULL){
-							yylval.string = strdup(env_name);
-							num_words = num_words + 1;
-							return WORD;
+							//yylval.string = strdup(env_name);
+							//num_words = num_words + 1;
+							//return WORD;
+							char *yycopy2 = strdup(env_name);
+							for ( int i = strlen(strdup(env_name)) - 1; i >= 0; --i )
+								unput( yycopy2[i] );
+							free(yycopy2);
 						}
 						else{
 							printf("Could not substitute variable\n");
@@ -53,9 +57,13 @@ alias {alias1 = true; return ALIAS;}
 						if(env_name!=NULL){
 							if(env_name[0] ==34 && env_name[strlen(env_name)-1] == 34)
 								env_name = strndup(env_name+1,strlen(env_name)-1);
-							yylval.string = strdup(env_name);
-							num_words = num_words + 1;
-							return WORD;
+							//yylval.string = strdup(env_name);
+							//num_words = num_words + 1;
+							//return WORD;
+							char *yycopy2 = strdup(env_name);
+							for ( int i = strlen(strdup(env_name)) - 1; i >= 0; --i )
+								unput( yycopy2[i] );
+							free(yycopy2);
 						}
 						else{
 							printf("Could not substitute variable\n");

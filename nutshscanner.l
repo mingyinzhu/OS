@@ -35,7 +35,7 @@ alias {alias1 = true; return ALIAS;}
 <<EOF>> {return EOF1;}
 
 
-\$\{[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*\}	{
+\$\{[^ <>|"\&\t\n][^ <>|"\&\t\n]*\}	{
 						char* env_var = strndup(yytext+2, yyleng-3);
 						char* env_name = getenv(env_var);
 						if(env_name!=NULL){
@@ -51,7 +51,7 @@ alias {alias1 = true; return ALIAS;}
 							printf("Could not substitute variable\n");
 						}
 						}
-\"\$\{[ \$~:.A-Za-z0-9!\/_-][ \$~:.A-Za-z0-9!\/_-]*\}\"	{
+\"\$\{[^ <>|"\&\t\n][^ <>|"\&\t\n]*\}\"	{
 						char* env_var = strndup(yytext+3, yyleng-5);
 						char* env_name = getenv(env_var);
 						if(env_name!=NULL){
@@ -72,7 +72,7 @@ alias {alias1 = true; return ALIAS;}
 
 
 
-[\"\'][[ {}\$~:.A-Za-z0-9!\/_-][ {}\$~:.A-Za-z0-9!\/_-]*[\"\']	{ expand = false;
+[\"\'][^ <>|"\&\t\n][^ <>|"\&\t\n]*[\"\']	{ expand = false;
 								yylval.string = strndup(yytext+1, yyleng-2);
 								num_words = num_words + 1;
 								if(ifAlias(yylval.string) && !unalias1 && !alias1 && !alias2 ) {
@@ -87,7 +87,7 @@ alias {alias1 = true; return ALIAS;}
 								}; 
 							}
 
-[=+\?\*~:.A-Za-z0-9!\/_-][=+\?\*~:.A-Za-z0-9!\/_-]*	{	num_words = num_words + 1;
+[^ <>|"\&\t\n][^ <>|"\&\t\n]*	{	num_words = num_words + 1;
 								expand = true;
 								if(ifAlias(yytext) && !unalias1 && !alias1 && !alias2) {
 								char *yycopy = strdup( subAliases(yytext) );
